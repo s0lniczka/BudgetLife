@@ -1,21 +1,23 @@
-const mysql = require('mysql2');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-const db = mysql.createConnection({
+const pool = new Pool({
   host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT
 });
 
-db.connect((err) => {
-  if (err) {
+// test połączenia
+pool.connect()
+  .then(client => {
+    console.log('✅ Połączono z bazą PostgreSQL');
+    client.release();
+  })
+  .catch(err => {
     console.error('❌ Błąd połączenia z bazą:', err);
     process.exit(1);
-  } else {
-    console.log('✅ Połączono z bazą danych MariaDB');
-  }
-});
+  });
 
-module.exports = db;
+module.exports = pool;
