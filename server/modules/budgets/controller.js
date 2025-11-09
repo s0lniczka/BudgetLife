@@ -20,9 +20,33 @@ exports.create = async (req, res, next) => {
       [req.user.id, month, planned_income, planned_expenses]
     );
     res.status(201).json(rows[0]);
-    await checkAchievements(req.user.id);
+    //await checkAchievements(req.user.id);
   } catch (e) { next(e); }
 };
+exports.addIncome = async (req, res, next) => {
+  try {
+    const { amount } = req.body;
+    const id = Number(req.params.id);
+
+    if (!amount || isNaN(amount)) {
+      return res.status(400).json({ error: 'Nieprawidłowa kwota' });
+    }
+
+    const { rows } = await db.query(
+      `UPDATE budgets
+         SET actual_income = COALESCE(actual_income, 0) + $1
+       WHERE id = $2 AND user_id = $3
+       RETURNING *`,
+      [Number(amount), id, req.user.id]
+    );
+
+    if (!rows[0]) return res.status(404).json({ error: 'Budżet nie znaleziony' });
+    res.json(rows[0]);
+  } catch (e) {
+    next(e);
+  }
+};
+
 
 exports.update = async (req, res, next) => {
   try {

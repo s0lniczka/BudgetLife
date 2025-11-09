@@ -69,7 +69,14 @@ exports.create = async (req, res, next) => {
        RETURNING *`,
       [req.user.id, Number(budget_id), category, toNum(amount), description ?? null, date ?? null]
     );
-    await checkAchievements(req.user.id);
+    await db.query(
+      `UPDATE budgets
+      SET actual_expenses = COALESCE(actual_expenses, 0) + $1
+      WHERE id = $2 AND user_id = $3`,
+      [toNum(amount), Number(budget_id), req.user.id]
+    );
+
+    //await checkAchievements(req.user.id);
 
     res.status(201).json(rows[0]);
   } catch (e) { next(e); }
@@ -124,13 +131,91 @@ exports.update = async (req, res, next) => {
 };
 
 exports.remove = async (req, res, next) => {
+  const client = await db.connect()
   try {
-    const id = Number(req.params.id);
-    const { rowCount } = await db.query(
+    await client.query('BEGIN')
+
+    // znajdź wydatek przed usunięciem, by znać jego kwotę i budżet
+    const { rows: exp } = await client.query(
+      'SELECT budget_id, amount FROM expenses WHERE id=$1 AND user_id=$2',
+      [req.params.id, req.user.id]
+    )
+
+    if (!exp.length) {
+      await client.query('ROLLBACK')
+      return res.status(404).json({ error: 'Nie znaleziono wydatku' })
+    }
+
+    const { budget_id, amount } = exp[0]
+
+    // usuń wydatek
+    await client.query(
       'DELETE FROM expenses WHERE id=$1 AND user_id=$2',
-      [id, req.user.id]
+      [req.params.id, req.user.id]
+    )
+
+    // zaktualizuj budżet
+    await client.query(
+      'UPDATE budgets SET actual_expenses = actual_expenses - $1 WHERE id=$2 AND user_id=$3',
+      [amount, budget_id, req.user.id]
+    )
+
+    await client.query('COMMIT')
+    res.status(204).end()
+  } catch (e) {
+    await client.query('ROLLBACK')
+    next(e)
+  } finally {
+    client.release()
+  }
+}
+
+exports.byCategory = async (req, res, next) => {
+  try {
+    const { budget_id } = req.query;
+
+    const params = [req.user.id];
+    let where = 'user_id = $1';
+
+    if (budget_id) {
+      params.push(Number(budget_id));
+      where += ` AND budget_id = $${params.length}`;
+    }
+
+    const { rows } = await db.query(
+      `SELECT category, SUM(amount)::float8 AS total
+       FROM expenses
+       WHERE ${where}
+       GROUP BY category
+       ORDER BY total DESC`,
+      params
     );
-    if (!rowCount) return res.status(404).json({ error: 'Not found' });
-    res.status(204).end();
+    res.json(rows);
   } catch (e) { next(e); }
 };
+
+exports.recent = async (req, res, next) => {
+  try {
+    const { budget_id } = req.query;
+
+    const params = [req.user.id];
+    let where = 'user_id = $1';
+
+    if (budget_id) {
+      params.push(Number(budget_id));
+      where += ` AND budget_id = $${params.length}`;
+    }
+
+    const { rows } = await db.query(
+      `SELECT category, amount::float8 AS amount, "date"
+       FROM expenses
+       WHERE ${where}
+       ORDER BY "date" DESC
+       LIMIT 5`,
+      params
+    );
+    res.json(rows);
+  } catch (e) { next(e); }
+};
+
+

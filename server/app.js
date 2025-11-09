@@ -13,11 +13,7 @@ app.use(rateLimit({ windowMs: 60_000, max: 100 }));
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
-app.use('/api/auth', require('./modules/auth/routes'));
-app.use('/api/budgets', require('./modules/budgets/routes'));
-app.use('/api/expenses', require('./modules/expenses/routes'));
-app.use('/api/achievements', require('./modules/achievements/routes'));
-
+app.use('/api', require('./routes'));
 
 
 app.use(require('./middlewares/error'));
