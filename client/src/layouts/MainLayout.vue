@@ -18,6 +18,11 @@
           <i class="pi pi-list mr-3"></i> Wydatki
         </RouterLink>
 
+        <RouterLink to="/savings" class="menu-link">
+          <i class="pi pi-money-bill mr-3"></i> Oszczędności
+        </RouterLink>
+
+
         <RouterLink to="/stats" class="menu-link">
           <i class="pi pi-chart-line mr-3"></i> Statystyki
         </RouterLink>
@@ -36,8 +41,13 @@
 
     <!-- GŁÓWNA ZAWARTOŚĆ -->
     <main class="flex-1 p-6 overflow-y-auto">
-      <router-view /> <!-- 👈 tutaj pojawiają się konkretne widoki -->
-    </main>
+
+      <div class="max-w-[1700px] mx-auto min-h-[calc(100vh-4rem)]">
+
+
+        <router-view />
+      </div>
+</main>
   </div>
 </template>
 

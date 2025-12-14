@@ -11,18 +11,23 @@ exports.list = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-exports.create = async (req, res, next) => {
+exports.create = async (req, res) => {
+  const { month, name, planned_income, actual_income, planned_expenses, actual_expenses } = req.body;
+  const user_id = req.user.id;
+
   try {
-    const { month, planned_income, planned_expenses } = req.body;
-    const { rows } = await db.query(
-      `INSERT INTO budgets (user_id,"month",planned_income,planned_expenses)
-       VALUES ($1,$2,$3,$4) RETURNING *`,
-      [req.user.id, month, planned_income, planned_expenses]
+    await db.query(
+      `INSERT INTO budgets (user_id, month, name, planned_income, actual_income, planned_expenses, actual_expenses)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [user_id, month, name, planned_income, actual_income, planned_expenses, actual_expenses]
     );
-    res.status(201).json(rows[0]);
-    //await checkAchievements(req.user.id);
-  } catch (e) { next(e); }
+
+    res.status(201).json({ message: "Budget created" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
+
 exports.addIncome = async (req, res, next) => {
   try {
     const { amount } = req.body;
@@ -48,21 +53,23 @@ exports.addIncome = async (req, res, next) => {
 };
 
 
-exports.update = async (req, res, next) => {
+exports.update = async (req, res) => {
+  const { month, name, planned_income, actual_income, planned_expenses, actual_expenses } = req.body;
+  const budget_id = req.params.id;
+
   try {
-    const { planned_income, planned_expenses, actual_income, actual_expenses } = req.body;
-    const { rows } = await db.query(
-      `UPDATE budgets
-         SET planned_income=$1, planned_expenses=$2,
-             actual_income=$3, actual_expenses=$4
-       WHERE id=$5 AND user_id=$6
-       RETURNING *`,
-      [planned_income, planned_expenses, actual_income, actual_expenses, req.params.id, req.user.id]
+    await db.query(
+      `UPDATE budgets SET month=$1, name=$2, planned_income=$3, actual_income=$4,
+       planned_expenses=$5, actual_expenses=$6 WHERE id=$7`,
+      [month, name, planned_income, actual_income, planned_expenses, actual_expenses, budget_id]
     );
-    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
-  } catch (e) { next(e); }
+
+    res.json({ message: "Budget updated" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
+
 
 exports.remove = async (req, res, next) => {
   try {

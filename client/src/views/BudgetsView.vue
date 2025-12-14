@@ -7,11 +7,13 @@
       </div>
 
       <DataTable :value="budgets" stripedRows responsiveLayout="scroll">
+        <Column field="name" header="Nazwa budżetu" />
         <Column field="month" header="Miesiąc" />
         <Column field="planned_income" header="Planowany przychód" />
         <Column field="planned_expenses" header="Planowane wydatki" />
         <Column field="actual_income" header="Rzeczywisty przychód" />
         <Column field="actual_expenses" header="Rzeczywiste wydatki" />
+
         <Column header="Akcje">
           <template #body="slotProps">
             <div class="flex gap-2">
@@ -22,10 +24,10 @@
                 v-tooltip="'Dodaj przychód'"
               />
               <Button
-               icon="pi pi-trash"
+                icon="pi pi-trash"
                 class="p-button-rounded p-button-danger p-button-sm"
-               @click="deleteBudget(slotProps.data.id)"
-               v-tooltip="'Usuń budżet'"
+                @click="deleteBudget(slotProps.data.id)"
+                v-tooltip="'Usuń budżet'"
               />
             </div>
           </template>
@@ -33,9 +35,15 @@
       </DataTable>
     </div>
 
-    <!-- dodanie budzetu -->
+    <!-- DIALOG: NOWY BUDŻET -->
     <Dialog v-model:visible="showDialog" header="Nowy budżet" modal class="w-[90vw] md:w-[30rem]">
       <div class="flex flex-col gap-3">
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nazwa budżetu</label>
+          <InputText v-model="form.name" class="w-full" placeholder="np. Dieta, Mieszkanie, Wakacje" />
+        </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Miesiąc budżetu</label>
           <Calendar
@@ -45,29 +53,34 @@
             showIcon
             class="w-full"
             :manualInput="false"
-            />
+          />
         </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Planowany przychód</label>
           <InputNumber v-model="form.planned_income" mode="currency" currency="PLN" locale="pl-PL" :min="0" class="w-full" />
         </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Planowane wydatki</label>
           <InputNumber v-model="form.planned_expenses" mode="currency" currency="PLN" locale="pl-PL" :min="0" class="w-full" />
         </div>
+
         <div class="flex justify-end gap-2 mt-3">
           <Button label="Anuluj" class="p-button-text" @click="showDialog = false" />
           <Button label="Zapisz" class="p-button-success" @click="addBudget" />
         </div>
       </div>
     </Dialog>
-    <!-- Ddodanie przychodu  -->
+
+    <!-- DIALOG: DODANIE PRZYCHODU -->
     <Dialog v-model:visible="showIncomeDialog" header="Dodaj przychód" modal class="w-[90vw] md:w-[25rem]">
       <div class="flex flex-col gap-3">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Kwota przychodu</label>
           <InputNumber v-model="incomeForm.amount" mode="currency" currency="PLN" locale="pl-PL" :min="1" class="w-full" />
         </div>
+
         <div class="flex justify-end gap-2 mt-3">
           <Button label="Anuluj" class="p-button-text" @click="showIncomeDialog = false" />
           <Button label="Zapisz" class="p-button-success" @click="addIncome" />
@@ -89,9 +102,18 @@ import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
 
 const API = 'http://localhost:5000/api'
+
 const budgets = ref([])
 const showDialog = ref(false)
-const form = ref({ month: '', planned_income: null, planned_expenses: null })
+
+// 🔥 dodane: nazwa budżetu
+const form = ref({
+  name: '',
+  month: '',
+  planned_income: null,
+  planned_expenses: null
+})
+
 const showIncomeDialog = ref(false)
 const incomeForm = ref({ id: null, amount: null })
 
@@ -104,6 +126,7 @@ async function loadBudgets() {
   const res = await fetch(`${API}/budgets`, { headers: authHeader() })
   budgets.value = await res.json()
 }
+
 function openIncomeDialog(budgetId) {
   incomeForm.value = { id: budgetId, amount: null }
   showIncomeDialog.value = true
@@ -111,10 +134,7 @@ function openIncomeDialog(budgetId) {
 
 async function addIncome() {
   const { id, amount } = incomeForm.value
-
-  if (!amount || amount <= 0) {
-    return alert('Podaj poprawną kwotę przychodu.')
-  }
+  if (!amount || amount <= 0) return alert('Podaj poprawną kwotę przychodu.')
 
   const res = await fetch(`${API}/budgets/${id}/income`, {
     method: 'PATCH',
@@ -132,15 +152,15 @@ async function addIncome() {
 }
 
 async function addBudget() {
-  // 🔒 Walidacja
+  if (!form.value.name)
+    return alert('Podaj nazwę budżetu.')
   if (!form.value.month)
     return alert('Wybierz miesiąc budżetu.')
   if (!form.value.planned_income || form.value.planned_income <= 0)
-    return alert('Podaj poprawny planowany przychód (większy od 0).')
+    return alert('Podaj poprawny planowany przychód.')
   if (!form.value.planned_expenses || form.value.planned_expenses < 0)
-    return alert('Podaj planowane wydatki (nie mogą być ujemne).')
+    return alert('Podaj planowane wydatki.')
 
-  // 🧹 Przygotowanie danych
   const payload = {
     ...form.value,
     month: form.value.month.toISOString().slice(0, 7),
@@ -148,7 +168,6 @@ async function addBudget() {
     planned_expenses: Number(form.value.planned_expenses)
   }
 
-  // 💾 Wysyłka
   const res = await fetch(`${API}/budgets`, {
     method: 'POST',
     headers: { ...authHeader(), 'Content-Type': 'application/json' },
@@ -160,9 +179,8 @@ async function addBudget() {
     return alert(err.error || 'Nie udało się dodać budżetu.')
   }
 
-  // ✅ Reset i odświeżenie
   showDialog.value = false
-  form.value = { month: '', planned_income: null, planned_expenses: null }
+  form.value = { name: '', month: '', planned_income: null, planned_expenses: null }
   await loadBudgets()
 }
 

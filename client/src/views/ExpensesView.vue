@@ -27,12 +27,13 @@
     <!-- DIALOG DODAWANIA WYDATKU -->
     <Dialog v-model:visible="showDialog" header="Nowy wydatek" modal class="w-[90vw] md:w-[30rem]">
       <div class="flex flex-col gap-3">
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Budżet</label>
           <Dropdown
             v-model="form.budget_id"
             :options="budgets"
-            optionLabel="month"
+            optionLabel="name"
             optionValue="id"
             class="w-full"
             placeholder="Wybierz budżet"
@@ -55,14 +56,15 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
-            <Calendar v-model="form.date" showIcon dateFormat="yy-mm-dd" class="w-full" />
+          <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+          <Calendar v-model="form.date" showIcon dateFormat="yy-mm-dd" class="w-full" />
         </div>
 
         <div class="flex justify-end gap-2 mt-3">
           <Button label="Anuluj" class="p-button-text" @click="showDialog = false" />
           <Button label="Zapisz" class="p-button-success" @click="addExpense" />
         </div>
+
       </div>
     </Dialog>
   </div>
@@ -80,9 +82,11 @@ import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
 
 const API = 'http://localhost:5000/api'
+
 const expenses = ref([])
 const budgets = ref([])
 const showDialog = ref(false)
+
 const form = ref({
   budget_id: null,
   category: '',
@@ -110,11 +114,13 @@ async function loadBudgets() {
   try {
     const res = await fetch(`${API}/budgets`, { headers: authHeader() })
     if (!res.ok) throw new Error('Błąd podczas pobierania budżetów')
-    budgets.value = await res.json()
+    const data = await res.json()
+    budgets.value = data.map(b => ({ ...b, id: Number(b.id) }))
   } catch (err) {
     console.error(err)
   }
 }
+
 
 async function addExpense() {
   if (!form.value.budget_id)
@@ -129,6 +135,7 @@ async function addExpense() {
   const cleanAmount = Number(form.value.amount)
   const payload = {
     ...form.value,
+    budget_id: Number(form.value.budget_id),
     amount: cleanAmount,
     date: new Date(form.value.date).toISOString()
   }
@@ -148,7 +155,6 @@ async function addExpense() {
   form.value = { budget_id: null, category: '', amount: null, description: '', date: '' }
   await loadExpenses()
 }
-
 
 async function deleteExpense(id) {
   try {
