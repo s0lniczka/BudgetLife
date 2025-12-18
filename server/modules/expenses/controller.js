@@ -1,5 +1,11 @@
 const db = require('../../config/db');
-const checkAchievements = require('../achievements/helpers');
+const { grantAchievement } = require('../achievements/helpers');
+const ExcelJS = require('exceljs');
+const PDFDocument = require('pdfkit');
+const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
+const path = require('path');
+const fs = require('fs');
+
 
 const toNum = (v) => (v === undefined || v === null || v === '' ? null : Number(v));
 
@@ -88,7 +94,13 @@ exports.create = async (req, res, next) => {
       [toNum(amount), Number(budget_id), userId]
     );
 
-    res.status(201).json(rows[0]);
+    const unlocked = await grantAchievement(userId, 2); // Pierwszy wydatek
+
+    res.status(201).json({
+      expense:rows[0],
+      achievementUnlocked: unlocked,
+      achievementName: 'Pierwszy wydatek',
+    });
 
   } catch (e) { next(e); }
 };
@@ -236,5 +248,261 @@ exports.recent = async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.exportXLS = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    const { rows } = await db.query(
+      `SELECT 
+         e.date,
+         b.name AS budget,
+         e.category,
+         e.amount,
+         e.description
+       FROM expenses e
+       JOIN budgets b ON b.id = e.budget_id
+       WHERE e.user_id = $1
+       ORDER BY e.date DESC`,
+      [userId]
+    );
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Wydatki');
+
+    // ====== KOLUMNY ======
+    worksheet.columns = [
+      { header: 'Data', key: 'date', width: 14 },
+      { header: 'Budżet', key: 'budget', width: 22 },
+      { header: 'Kategoria', key: 'category', width: 20 },
+      { header: 'Kwota (zł)', key: 'amount', width: 16 },
+      { header: 'Opis', key: 'description', width: 30 }
+    ];
+
+    // ====== STYL NAGŁÓWKA ======
+    worksheet.getRow(1).eachCell(cell => {
+      cell.font = { bold: true };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE5E7EB' } // jasny szary
+      };
+      cell.border = borderAll();
+    });
+
+    // ====== DANE ======
+    rows.forEach(r => {
+      const row = worksheet.addRow({
+        date: r.date,
+        budget: r.budget,
+        category: r.category,
+        amount: Number(r.amount),
+        description: r.description
+      });
+
+      row.getCell('amount').numFmt = '#,##0.00 "zł"';
+
+      row.eachCell(cell => {
+        cell.border = borderAll();
+      });
+    });
+
+    // ====== PUSTY WIERSZ ======
+    worksheet.addRow({});
+
+    // ====== SUMA ======
+    const total = rows.reduce((sum, r) => sum + Number(r.amount), 0);
+
+    const sumRow = worksheet.addRow({
+      category: 'SUMA',
+      amount: total
+    });
+
+    sumRow.font = { bold: true };
+    sumRow.getCell('amount').numFmt = '#,##0.00 "zł"';
+
+    sumRow.eachCell(cell => {
+      cell.border = {
+        top: { style: 'thick' },
+        left: { style: 'thin' },
+        right: { style: 'thin' },
+        bottom: { style: 'thin' }
+      };
+    });
+
+    // ====== AUTOFILTER ======
+    worksheet.autoFilter = {
+      from: 'A1',
+      to: 'E1'
+    };
+
+    // ====== RESPONSE ======
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=wydatki.xlsx'
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+function borderAll() {
+  return {
+    top: { style: 'thin' },
+    left: { style: 'thin' },
+    bottom: { style: 'thin' },
+    right: { style: 'thin' }
+  };
+}
+
+exports.exportPDF = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    const { rows } = await db.query(
+      `SELECT e.date, b.name AS budget, e.category, e.amount, e.description
+       FROM expenses e
+       JOIN budgets b ON b.id = e.budget_id
+       WHERE e.user_id = $1
+       ORDER BY e.date ASC`,
+      [userId]
+    );
+
+    // ======================
+    // 📊 agregacja miesięczna
+    // ======================
+    const monthly = {};
+    let total = 0;
+
+    rows.forEach(r => {
+      const m = r.date.toISOString().slice(0, 7);
+      monthly[m] = (monthly[m] || 0) + Number(r.amount);
+      total += Number(r.amount);
+    });
+
+    // ======================
+    // 📈 wykres
+    // ======================
+    const chartCanvas = new ChartJSNodeCanvas({ width: 700, height: 350 });
+    const chartImage = await chartCanvas.renderToBuffer({
+      type: 'bar',
+      data: {
+        labels: Object.keys(monthly),
+        datasets: [{
+          label: 'Wydatki (zł)',
+          data: Object.values(monthly),
+          backgroundColor: '#34d399'
+        }]
+      },
+      options: {
+        plugins: { legend: { display: true } },
+        scales: {
+          y: {
+            ticks: {
+              callback: value => `${value} zł`
+            }
+          }
+        }
+      }
+    });
+
+    // ======================
+    // 📄 PDF
+    // ======================
+    const doc = new PDFDocument({ margin: 40, size: 'A4' });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=wydatki.pdf');
+    doc.pipe(res);
+
+    const fontPath = path.join(__dirname, '../../assets/fonts/DejaVuSans.ttf');
+    doc.font(fontPath);
+
+    // ======================
+    // 🧾 tytuł
+    // ======================
+    doc.fontSize(20).text('Raport wydatków', { align: 'center' });
+    doc.moveDown(1);
+
+    // ======================
+    // 📊 wykres
+    // ======================
+    doc.image(chartImage, {
+      fit: [500, 260],
+      align: 'center'
+    });
+
+    doc.moveDown(1.5);
+
+    // ======================
+    // 📋 tabela
+    // ======================
+    const rowH = 22;
+    const col = {
+      date: 80,
+      budget: 120,
+      category: 110,
+      amount: 90,
+      desc: 130
+    };
+
+    const drawCell = (text, x, y, w, h) => {
+      doc.rect(x, y, w, h).stroke();
+      doc.text(text, x + 4, y + 6, {
+        width: w - 8,
+        height: h - 8
+      });
+    };
+
+    let x = doc.x;
+    let y = doc.y;
+
+    doc.fontSize(10);
+
+    // nagłówek
+    drawCell('Data', x, y, col.date, rowH);
+    drawCell('Budżet', x + col.date, y, col.budget, rowH);
+    drawCell('Kategoria', x + col.date + col.budget, y, col.category, rowH);
+    drawCell('Kwota (zł)', x + col.date + col.budget + col.category, y, col.amount, rowH);
+    drawCell('Opis', x + col.date + col.budget + col.category + col.amount, y, col.desc, rowH);
+
+    y += rowH;
+
+    // dane
+    rows.forEach(r => {
+      if (y > doc.page.height - 80) {
+        doc.addPage();
+        y = doc.y;
+      }
+
+      drawCell(r.date.toISOString().slice(0, 10), x, y, col.date, rowH);
+      drawCell(r.budget, x + col.date, y, col.budget, rowH);
+      drawCell(r.category, x + col.date + col.budget, y, col.category, rowH);
+      drawCell(`${Number(r.amount).toFixed(2)} zł`, x + col.date + col.budget + col.category, y, col.amount, rowH);
+      drawCell(r.description || '', x + col.date + col.budget + col.category + col.amount, y, col.desc, rowH);
+
+      y += rowH;
+    });
+
+    // ======================
+    // ➕ suma
+    // ======================
+    doc.moveDown(1);
+    doc.fontSize(12).text(`SUMA: ${total.toFixed(2)} zł`, { align: 'right' });
+
+    doc.end();
+
+  } catch (err) {
+    next(err);
   }
 };

@@ -8,6 +8,26 @@
         <Button label="➕ Nowy cel" class="p-button-success" @click="showDialog = true" />
       </div>
 
+      <div class="flex gap-2 mb-6 flex-wrap">
+        <button
+          v-for="f in filters"
+          :key="f.value"
+          @click="activeFilter = f.value"
+          class="px-4 py-2 rounded-full text-sm font-medium transition"
+          :class="[
+            activeFilter === f.value
+              ? f.activeClass
+              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+          ]"
+        >
+          {{ f.label }}
+          <span class="ml-1 opacity-80">
+            ({{ counts[f.value] }})
+          </span>
+        </button>
+      </div>
+
+
       <!-- LISTA CELÓW -->
       <div v-if="goals.length === 0" class="text-gray-600 text-center py-10">
         Brak celów oszczędnościowych. Dodaj pierwszy cel!
@@ -15,7 +35,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <div
-          v-for="g in goals"
+          v-for="g in filteredGoals"
           :key="g.id"
           class="bg-white border border-gray-200 rounded-xl shadow p-5 hover:shadow-lg transition cursor-pointer"
         >
@@ -23,9 +43,16 @@
             <h2 class="text-xl font-semibold text-gray-800">
               {{ g.name }}
             </h2>
-            <span class="text-gray-500 text-sm">
-              {{ formatDate(g.deadline) }}
-            </span>
+
+            <div
+              v-if="statusMap[g.status]"
+              class="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold"
+              :class="statusMap[g.status].class"
+            >
+              <span>{{ statusMap[g.status].label }}</span>
+              <span class="opacity-70">|</span>
+              <span>{{ formatDate(g.deadline) }}</span>
+            </div>
           </div>
 
           <!-- PROGRESS BAR -->
@@ -52,6 +79,7 @@
               @click="goToGoal(g.id)"
             />
             <Button
+              v-if="g.status !== 'completed'"
               icon="pi pi-trash"
               class="p-button-rounded p-button-danger p-button-sm"
               @click="deleteGoal(g.id)"
@@ -102,7 +130,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -115,12 +143,62 @@ const API = "http://localhost:5000/api"
 const goals = ref([])
 const showDialog = ref(false)
 const router = useRouter()
+const activeFilter = ref('all')
+
 
 const form = ref({
   name: '',
   target_amount: null,
   deadline: null
 })
+
+const filters = [
+  {
+    label: 'Wszystkie',
+    value: 'all',
+    activeClass: 'bg-gray-800 text-white'
+  },
+  {
+    label: 'W realizacji',
+    value: 'in_progress',
+    activeClass: 'bg-blue-500 text-white'
+  },
+  {
+    label: 'Zakończone',
+    value: 'completed',
+    activeClass: 'bg-emerald-500 text-white'
+  },
+  {
+    label: 'Anulowane',
+    value: 'canceled',
+    activeClass: 'bg-yellow-500 text-white'
+  },
+  {
+    label: 'Nieudane',
+    value: 'failed',
+    activeClass: 'bg-red-500 text-white'
+  }
+]
+
+const statusMap = {
+  in_progress: {
+    label: 'W realizacji',
+    class: 'bg-blue-100 text-blue-700'
+  },
+  completed: {
+    label: 'Zakończony',
+    class: 'bg-emerald-100 text-emerald-700'
+  },
+  canceled: {
+    label: 'Anulowany',
+    class: 'bg-yellow-100 text-yellow-700'
+  },
+  failed: {
+    label: 'Nieudany',
+    class: 'bg-red-100 text-red-700'
+  }
+}
+
 
 function goToGoal(id) {
   router.push(`/savings/${id}`)
@@ -136,6 +214,20 @@ async function loadGoals() {
   goals.value = await res.json()
 }
 
+const filteredGoals = computed(() => {
+  if (activeFilter.value === 'all') return goals.value
+  return goals.value.filter(g => g.status === activeFilter.value)
+})
+
+const counts = computed(() => ({
+  all: goals.value.length,
+  in_progress: goals.value.filter(g => g.status === 'in_progress').length,
+  completed: goals.value.filter(g => g.status === 'completed').length,
+  canceled: goals.value.filter(g => g.status === 'canceled').length,
+  failed: goals.value.filter(g => g.status === 'failed').length
+}))
+
+
 async function createGoal() {
   if (!form.value.name)
     return alert("Podaj nazwę celu")
@@ -144,10 +236,14 @@ async function createGoal() {
   if (!form.value.deadline)
     return alert("Wybierz termin")
 
+  const d= form.value.deadline
+
   const payload = {
     name: form.value.name,
     target_amount: Number(form.value.target_amount),
-    deadline: new Date(form.value.deadline).toISOString().slice(0, 10)
+    deadline: d
+    ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    : null
   }
 
   const res = await fetch(`${API}/savings`, {
@@ -183,7 +279,8 @@ function formatCurrency(v) {
 }
 
 function formatDate(v) {
-  return v ? String(v).slice(0, 10) : '---'
+  if (!v) return '---'
+  return v.slice(0, 10).split('-').reverse().join('.')
 }
 
 onMounted(loadGoals)

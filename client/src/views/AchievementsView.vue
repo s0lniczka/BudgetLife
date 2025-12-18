@@ -56,29 +56,51 @@ const loading = ref(true)
 const all = ref([])
 const mine = ref([])
 
+
 const unlockedIds = ref(new Set())
 const unlockedMap = ref(new Map())
 
+
+
 onMounted(async () => {
+  loading.value = true
+
   try {
     const token = localStorage.getItem('token')
+    const headers = { Authorization: `Bearer ${token}` }
 
     const [allRes, mineRes] = await Promise.all([
-      fetch(`${API}/achievements`),
-      fetch(`${API}/achievements/mine`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      fetch(`${API}/achievements`, { headers }),
+      fetch(`${API}/achievements/mine`, { headers })
     ])
 
-    all.value = await allRes.json()
-    mine.value = (await mineRes.json()) ?? []
+    if (!allRes.ok) {
+      console.error('Achievements error:', await allRes.text())
+      all.value = []
+      mine.value = []
+      return
+    }
 
-    unlockedIds.value = new Set(mine.value.map(x => x.id ?? x.achievement_id))
-    unlockedMap.value = new Map(
-      mine.value.map(x => [x.id ?? x.achievement_id, x])
-    )
+    if (!mineRes.ok) {
+      console.error('My achievements error:', await mineRes.text())
+      all.value = await allRes.json()
+      mine.value = []
+      return
+    }
+
+    all.value = await allRes.json()
+    mine.value = await mineRes.json()
+
+    unlockedIds.value = new Set(mine.value.map(x => x.id))
+    unlockedMap.value = new Map(mine.value.map(x => [x.id, x]))
+
+  } catch (err) {
+    console.error('Achievements fetch crashed:', err)
+    all.value = []
+    mine.value = []
   } finally {
     loading.value = false
   }
 })
+
 </script>

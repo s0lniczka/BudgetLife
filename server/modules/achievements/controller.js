@@ -1,4 +1,6 @@
 const db = require('../../config/db');
+const { grantAchievement } = require('../achievements/helpers')
+
 
 exports.listAll = async (req, res, next) => {
   try {
@@ -32,3 +34,23 @@ exports.unlock = async (req, res, next) => {
     res.status(204).end(); // No Content
   } catch (e) { next(e); }
 };
+exports.getPoints = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+
+    const { rows } = await db.query(
+      `
+      SELECT COALESCE(SUM(a.points), 0) AS points
+      FROM user_achievements ua
+      JOIN achievements a ON a.id = ua.achievement_id
+      WHERE ua.user_id = $1
+      `,
+      [userId]
+    )
+
+    res.json({ points: Number(rows[0].points) })
+  } catch (e) {
+    next(e)
+  }
+}
+

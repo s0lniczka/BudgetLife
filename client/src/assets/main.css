@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+/* Achievement toast – wysoki kontrast */
+.p-toast .p-toast-message-success {
+  background: rgba(5, 150, 105, 0.95);
+  border-left: 6px solid #10b981;
+  color: #ecfdf5;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(6px);
+}
+
+.p-toast .p-toast-message-success .p-toast-summary {
+  font-weight: 700;
+  color: #ecfdf5;
+}
+
+.p-toast .p-toast-message-success .p-toast-detail {
+  color: #d1fae5;
+}
+
+.p-toast .p-toast-message-success .p-toast-message-icon {
+  color: #a7f3d0;
+}
+
+/* LIGHT */
+html.light {
+  --bg-main: #f0fdf9;
+  --bg-card: #ffffff;
+  --text-main: #111827;
+}
+
+/* DARK */
+html.dark {
+  --bg-main: #0f172a;
+  --bg-card: #020617;
+  --text-main: #e5e7eb;
+}
+
+body {
+  background: var(--bg-main);
+  color: var(--text-main);
+}

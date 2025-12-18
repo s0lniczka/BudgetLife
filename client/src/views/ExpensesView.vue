@@ -3,7 +3,11 @@
     <div class="bg-white/90 backdrop-blur-lg shadow-xl rounded-2xl p-8">
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-800">🧾 Twoje wydatki</h1>
-        <Button label="➕ Dodaj wydatek" class="p-button-success" @click="showDialog = true" />
+        <div class="flex gap-3">
+          <Button label="➕ Dodaj wydatek" class="p-button-success" @click="showDialog = true" />
+          <Button label="📊 Eksport do Excel" class="p-button-outlined" @click="exportXLS"/>
+          <Button label="📊 Eksport do PDF" class="p-button-outlined" @click="exportPDF"/>
+        </div>  
       </div>
 
       <DataTable :value="expenses" stripedRows responsiveLayout="scroll">
@@ -80,12 +84,14 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
+import { useToast } from 'primevue/usetoast'
 
 const API = 'http://localhost:5000/api'
 
 const expenses = ref([])
 const budgets = ref([])
 const showDialog = ref(false)
+const toast = useToast()
 
 const form = ref({
   budget_id: null,
@@ -98,6 +104,55 @@ const form = ref({
 function authHeader() {
   const token = localStorage.getItem('token')
   return { Authorization: `Bearer ${token}` }
+}
+
+async function exportXLS() {
+  try {
+    const res = await fetch(`${API}/expenses/export/xls`, {
+      headers: authHeader()
+    })
+
+    if (!res.ok) throw new Error('Błąd eksportu')
+
+    const blob = await res.blob()
+    const url = window.URL.createObjectURL(blob)
+
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'wydatki.xlsx'
+    document.body.appendChild(a)
+    a.click()
+
+    a.remove()
+    window.URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error(err)
+    alert('Nie udało się wyeksportować danych')
+  }
+}
+async function exportPDF() {
+  try {
+    const res = await fetch(`${API}/expenses/export/pdf`, {
+      headers: authHeader()
+    })
+
+    if (!res.ok) throw new Error('Błąd eksportu PDF')
+
+    const blob = await res.blob()
+    const url = window.URL.createObjectURL(blob)
+
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'wydatki.pdf'
+    document.body.appendChild(a)
+    a.click()
+
+    a.remove()
+    window.URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error(err)
+    alert('Nie udało się wyeksportować PDF')
+  }
 }
 
 async function loadExpenses() {
@@ -150,10 +205,21 @@ async function addExpense() {
     const err = await res.json().catch(() => ({}))
     return alert(err.error || 'Nie udało się dodać wydatku')
   }
+  const data = await res.json()
+  if (data.achievementUnlocked) {
+  toast.add({
+    severity: 'success',
+    summary: '🏆 Osiągnięcie odblokowane!',
+    detail: data.achievementName ?? 'Nowe osiągnięcie',
+    life: 4000
+  })
+}
+
 
   showDialog.value = false
   form.value = { budget_id: null, category: '', amount: null, description: '', date: '' }
   await loadExpenses()
+  await checkForNewAchievements()
 }
 
 async function deleteExpense(id) {

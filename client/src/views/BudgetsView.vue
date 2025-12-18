@@ -100,13 +100,16 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
+import { useToast } from 'primevue/usetoast'
+
 
 const API = 'http://localhost:5000/api'
 
 const budgets = ref([])
 const showDialog = ref(false)
+const toast = useToast()
 
-// 🔥 dodane: nazwa budżetu
+
 const form = ref({
   name: '',
   month: '',
@@ -178,6 +181,18 @@ async function addBudget() {
     const err = await res.json().catch(() => ({}))
     return alert(err.error || 'Nie udało się dodać budżetu.')
   }
+
+  const data = await res.json()
+
+  if (data.achievementUnlocked) {
+    toast.add({
+      severity: 'success',
+      summary: '🏆 Osiągnięcie odblokowane!',
+      detail: data.achievementName,
+      life: 4000
+    })
+  }
+
 
   showDialog.value = false
   form.value = { name: '', month: '', planned_income: null, planned_expenses: null }

@@ -1,4 +1,6 @@
 const db = require('../../config/db');
+const { grantAchievement } = require('../achievements/helpers');
+
 
 //
 // Uniwersalne pobieranie id użytkownika z JWT
@@ -13,6 +15,17 @@ function getUserId(req) {
 exports.list = async (req, res) => {
   try {
     const userId = getUserId(req);
+
+    await db.query(`
+      UPDATE savings_goals
+      SET status = 'failed'
+      WHERE user_id = $1
+        AND status = 'in_progress'
+        AND deadline IS NOT NULL
+        AND deadline < CURRENT_DATE
+        AND saved_amount < target_amount
+    `, [userId]);
+
 
     const { rows } = await db.query(
       `SELECT *
@@ -169,7 +182,6 @@ exports.addPayment = async (req, res) => {
 
     await client.query("BEGIN");
 
-    // sprawdź czy cel istnieje i należy do usera
     const goal = await client.query(
       `SELECT * FROM savings_goals
        WHERE id=$1 AND user_id=$2`,
@@ -181,7 +193,6 @@ exports.addPayment = async (req, res) => {
       return res.status(404).json({ error: "Goal not found" });
     }
 
-    // ✅ dodaj wpłatę do savings_transactions
     const payment = await client.query(
       `INSERT INTO savings_transactions (goal_id, amount, date)
        VALUES ($1, $2, NOW())
@@ -189,7 +200,6 @@ exports.addPayment = async (req, res) => {
       [goalId, Number(amount)]
     );
 
-    // zaktualizuj saved_amount w savings_goals
     await client.query(
       `UPDATE savings_goals
        SET saved_amount = saved_amount + $1
@@ -197,22 +207,43 @@ exports.addPayment = async (req, res) => {
       [Number(amount), goalId]
     );
 
-    const updatedGoal = await client.query(
-      `SELECT saved_amount, target_amount FROM savings_goals WHERE id=$1`,
+    const { rows: [updated] } = await client.query(
+      `SELECT saved_amount, target_amount, status
+       FROM savings_goals
+       WHERE id=$1`,
       [goalId]
     );
 
-    if (updatedGoal.rows[0].saved_amount >= updatedGoal.rows[0].target_amount) {
+    
+
+    // 🔔 achievements do zwrotu
+    const unlocked = [];
+
+    // 💰 oszczędzono 1000
+    if (updated.saved_amount >= 1000) {
+      const ok = await grantAchievement(userId, 3);
+      if (ok) unlocked.push('Zaoszczędzono 1000 zł');
+    }
+
+    // 🎯 cel osiągnięty (tylko jeśli nie był wcześniej completed)
+    if (updated.saved_amount >= updated.target_amount && updated.status !== 'completed') {
       await client.query(
         `UPDATE savings_goals
-        SET status = 'completed'
-        WHERE id=$1`,
+         SET status = 'completed'
+         WHERE id=$1`,
         [goalId]
       );
+
+      const ok = await grantAchievement(userId, 6);
+      if (ok) unlocked.push('Cel oszczędnościowy ukończony');
     }
 
     await client.query("COMMIT");
-    res.status(201).json(payment.rows[0]);
+
+    res.status(201).json({
+      payment: payment.rows[0],
+      achievements: unlocked
+    });
 
   } catch (err) {
     await client.query("ROLLBACK");
@@ -221,4 +252,5 @@ exports.addPayment = async (req, res) => {
     client.release();
   }
 };
+
 

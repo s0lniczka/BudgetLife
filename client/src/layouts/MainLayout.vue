@@ -35,6 +35,15 @@
           <i class="pi pi-cog mr-3"></i> Ustawienia
         </RouterLink>
       </nav>
+      <div class="mt-4 flex justify-center">
+        <Button
+          :icon="settings.theme === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+          class="p-button-rounded p-button-text"
+          @click="settings.setTheme(
+            settings.theme === 'dark' ? 'light' : 'dark'
+          )"
+        />
+      </div>
 
       <Button label="Wyloguj" icon="pi pi-sign-out" class="p-button-danger mt-auto" @click="logout" />
     </aside>
@@ -54,6 +63,9 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
+import { useSettingsStore } from '@/stores/settings'
+
+const settings = useSettingsStore()
 
 const router = useRouter()
 const logout = () => {

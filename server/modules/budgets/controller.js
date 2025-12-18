@@ -1,5 +1,6 @@
 const db = require('../../config/db');
-const checkAchievements = require('../achievements/helpers'); // dodaj na górze
+const { grantAchievement } = require('../achievements/helpers');
+
 
 exports.list = async (req, res, next) => {
   try {
@@ -21,11 +22,18 @@ exports.create = async (req, res) => {
        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
       [user_id, month, name, planned_income, actual_income, planned_expenses, actual_expenses]
     );
-
-    res.status(201).json({ message: "Budget created" });
+    
+    const unlocked = await grantAchievement(user_id, 1); // Pierwszy budżet
+    
+    res.status(201).json({ 
+      message: "Budget created",
+      achievementUnlocked: unlocked,
+      achievementName: 'Pierwszy budżet'
+     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+  
 };
 
 exports.addIncome = async (req, res, next) => {
