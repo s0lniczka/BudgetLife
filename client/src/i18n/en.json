@@ -1,0 +1,269 @@
+{
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "currency": "Currency",
+    "language": "Language",
+    "points": "Achievement points"
+  },
+  "common": {
+    "add": "Add",
+    "delete": "Delete",
+    "edit": "Edit",
+    "logout": "Logout",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "menu": {
+  "dashboard": "Dashboard",
+  "budgets": "Budgets",
+  "expenses": "Expenses",
+  "savings": "Savings",
+  "stats": "Stats",
+  "achievements": "Achievements",
+  "settings": "Settings"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "loading": "Loading achievements...",
+    "status": {
+        "unlocked": "Unlocked",
+        "locked": "Locked"
+    },
+    "earnedAt": "Earned at"
+  },
+  "budgets": {
+    "title": "Your budgets",
+    "new": "New budget",
+    "columns": {
+      "name": "Budget name",
+      "month": "Month",
+      "plannedIncome": "Planned income",
+      "plannedExpenses": "Planned expenses",
+      "actualIncome": "Actual income",
+      "actualExpenses": "Actual expenses",
+      "actions": "Actions"
+    },
+    "actions": {
+      "addIncome": "Add income",
+      "delete": "Delete budget"
+    },
+    "dialogs": {
+      "new": "New budget",
+      "addIncome": "Add income",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "form": {
+      "name": "Budget name",
+      "month": "Budget month",
+      "plannedIncome": "Planned income",
+      "plannedExpenses": "Planned expenses"
+    },
+    "validation": {
+      "name": "Enter budget name.",
+      "month": "Select budget month.",
+      "plannedIncome": "Enter valid planned income.",
+      "plannedExpenses": "Enter planned expenses.",
+      "incomeAmount": "Enter valid income amount."
+    },
+    "achievement": {
+      "unlocked": "🏆 Achievement unlocked!"
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "email": "Your email",
+    "currency": "Currency",
+
+    "balance": "Balance",
+    "activeBudgets": "Active budgets",
+    "monthExpenses": "Expenses this month",
+
+    "expensesStructure": "Expense structure",
+    "selectBudget": "Select budget",
+
+    "recentTransactions": "Recent transactions",
+    "loading": "Loading data...",
+    "noTransactions": "No transactions for selected budget.",
+
+    "table": {
+      "date": "Date",
+      "category": "Category",
+      "amount": "Amount"
+    }
+  },
+  "expenses": {
+    "title": "Your expenses",
+    "add": "Add expense",
+    "exportExcel": "Export to Excel",
+    "exportPdf": "Export to PDF",
+
+    "columns": {
+      "budget": "Budget",
+      "category": "Category",
+      "amount": "Amount",
+      "description": "Description",
+      "date": "Date",
+      "actions": "Actions"
+    },
+
+    "actions": {
+      "delete": "Delete expense"
+    },
+
+    "dialog": {
+      "title": "New expense"
+    },
+
+    "form": {
+      "budget": "Budget",
+      "selectBudget": "Select budget",
+      "category": "Category",
+      "categoryPlaceholder": "e.g. Food",
+      "amount": "Amount",
+      "description": "Description",
+      "descriptionPlaceholder": "e.g. Grocery shopping",
+      "date": "Date"
+    },
+
+    "achievement": {
+      "unlocked": "🏆 Achievement unlocked!",
+      "default": "New achievement"
+    }
+  },
+  "forgot": {
+    "title": "Reset password",
+    "subtitle": "Enter your email to receive a password reset link.",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "send": "Send reset link",
+    "back": "Back to login",
+
+    "validation": {
+      "email": "Please enter your email address."
+    }
+  },
+  "login": {
+    "subtitle": "Welcome back to your budget!",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "submit": "Log in",
+    "forgot": "Forgot your password?",
+    "register": "Don't have an account? Register",
+
+    "validation": {
+      "required": "Please enter email and password.",
+      "invalid": "Invalid email or password."
+    },
+
+    "success": "Logged in as {username}."
+  },
+  "register": {
+    "title": "Create an account",
+    "subtitlePrefix": "Join ",
+    "subtitleSuffix": " and start managing your finances!",
+    "username": "Username",
+    "usernamePlaceholder": "Your name",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "password2": "Repeat password",
+    "submit": "Sign up",
+    "haveAccount": "Already have an account? Log in",
+
+    "validation": {
+      "required": "Please enter username, email and password.",
+      "passwordMin": "Password must be at least 6 characters long.",
+      "passwordMismatch": "Passwords do not match.",
+      "failed": "Registration failed."
+    },
+
+    "success": "Account {username} created! You can go to login now.",
+    "error": "API connection error."
+  },
+  "reset": {
+    "title": "Set a new password",
+    "subtitle": "Enter a new password to regain access to your account.",
+    "password": "New password",
+    "password2": "Repeat password",
+    "submit": "Change password",
+
+    "validation": {
+      "required": "Please fill in both fields.",
+      "mismatch": "Passwords do not match.",
+      "minLength": "Password must be at least 6 characters long.",
+      "noToken": "Reset token is missing."
+    },
+
+    "success": "Password changed successfully. You can log in now.",
+    "error": "API connection error."
+  },
+  "savings": {
+    "back": "Back",
+    "details": {
+      "title": "Goal details"
+    },
+    "target": "Target",
+    "saved": "Saved",
+    "status": "Status",
+    "deadline": "Deadline",
+
+    "statuses": {
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "canceled": "Canceled",
+      "failed": "Failed"
+    },
+
+    "completedMessage": "Congratulations! You have reached your savings goal.",
+    "addPayment": "Add payment",
+    "cannotAdd": "This goal is already completed — you cannot add more payments.",
+    "history": "Payment history",
+    "noPayments": "No payments yet.",
+
+    "chart": {
+      "count": "Number of payments",
+      "sum": "Total"
+    },
+
+    "errors": {
+    "addPayment": "Failed to add payment.",
+    "saveEdit": "Failed to save changes.",
+    "deletePayment": "Failed to delete payment.",
+    "deleteGoal": "Failed to delete goal."
+  },
+  "confirmDelete": "Are you sure you want to delete this goal?",
+  "title": "Your savings goals",
+  "new": "New goal",
+  "empty": "No savings goals yet. Add your first one!",
+
+  "filters": {
+    "all": "All",
+    "in_progress": "In progress",
+    "completed": "Completed",
+    "canceled": "Canceled",
+    "failed": "Failed"
+  },
+
+  "details": "Details",
+
+  "form": {
+    "new": "New goal",
+    "name": "Goal name",
+    "target": "Target amount",
+    "deadline": "Deadline"
+  },
+
+  "validation": {
+    "name": "Please enter a goal name",
+    "target": "Please enter a valid target amount",
+    "deadline": "Please select a deadline",
+    "amount": "Please enter a valid amount"
+  },
+
+  "createError": "Error while creating goal"
+  }
+}
+

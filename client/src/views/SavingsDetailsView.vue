@@ -10,13 +10,13 @@
         <button
           class="text-gray-600 font-bold hover:text-gray-900 text-xl"
           @click="router.push('/savings')"
-          title="Wróć"
+          :title="t('savings.back')"
         >
           ←
         </button>
 
         <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
-          🏆 Szczegóły celu
+          🏆 {{ t('savings.details.title') }}
         </h1>
       </div>
 
@@ -26,18 +26,18 @@
           class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded"
           @click="openEdit"
         >
-          Edytuj cel
+          {{ t('common.edit') }}
         </button>
 
         <button
           class="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded"
           @click="deleteGoal"
         >
-          Usuń
+          {{ t('common.delete') }}
         </button>
 
         <span class="text-gray-700 font-medium whitespace-nowrap">
-          | Deadline: {{ formatDate(goal.deadline) }}
+          | {{ t('savings.deadline') }}: {{ formatDate(goal.deadline) }}
         </span>
       </div>
 
@@ -58,15 +58,15 @@
         <div class="col-span-12 md:col-span-5 space-y-3">
 
           <p class="text-gray-700">
-            <strong>Cel:</strong> {{ money(goal.target_amount) }}
+            <strong>{{ t('savings.target') }}</strong> {{ money(goal.target_amount) }}
           </p>
 
           <p class="text-gray-700">
-            <strong>Uzbierano:</strong> {{ money(goal.saved_amount) }}
+            <strong>{{ t('savings.saved') }}</strong> {{ money(goal.saved_amount) }}
           </p>
 
           <div class="flex items-center gap-2">
-            <span class="text-sm font-medium text-gray-700"><strong>Status:</strong></span>
+            <span class="text-sm font-medium text-gray-700"><strong>{{ t('savings.status') }}</strong></span>
 
             <span
               class="px-3 py-1 text-xs rounded-full font-semibold"
@@ -96,7 +96,7 @@
             v-if="goal.status === 'completed'"
             class="mt-3 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2 text-emerald-700 text-sm"
           >
-            🎉 Gratulacje! Osiągnąłeś swój cel oszczędnościowy.
+            🎉 {{ t('savings.completedMessage') }}
           </div>
 
 
@@ -112,7 +112,7 @@
                 : 'bg-white text-gray-600'"
               @click="chartMode = 'count'"
             >
-              Liczba wpłat
+              {{ t('savings.chart.count') }}
             </button>
 
             <button
@@ -122,7 +122,7 @@
                 : 'bg-white text-gray-600'"
               @click="chartMode = 'sum'"
             >
-              Suma (PLN)
+              {{ t('savings.chart.sum') }}
             </button>
           </div>
 
@@ -142,14 +142,14 @@
 
       <!-- DODAWANIE WPŁATY -->
       <div class="space-y-4 border-b pb-8">
-        <h3 class="text-xl font-semibold text-gray-900">Dodaj wpłatę</h3>
+        <h3 class="text-xl font-semibold text-gray-900">{{ t('savings.addPayment') }}</h3>
 
         <!-- Gdy cel ukończony -->
         <div
           v-if="goal.status === 'completed'"
           class="text-sm text-gray-500 italic"
         >
-          Ten cel jest już ukończony — nie można dodać kolejnych wpłat :)
+          {{ t('savings.cannotAdd') }}
         </div>
 
         <!-- Gdy w trakcie -->
@@ -163,7 +163,7 @@
             placeholder="Kwota"
           />
           <Button
-            label="Dodaj"
+            :label="t('common.add')"
             class="p-button-success"
             @click="addPayment"
           />
@@ -174,10 +174,10 @@
 
       <!-- HISTORIA WPŁAT -->
       <div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-4">Historia wpłat</h3>
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">{{ t('savings.history') }}</h3>
 
         <div v-if="payments.length === 0" class="text-gray-500">
-          Brak wpłat.
+          {{ t('savings.noPayments') }}
         </div>
 
         <!-- HISTORIA WPŁAT – TIMELINE -->
@@ -228,7 +228,7 @@
                 <button
                   class="text-blue-500 hover:text-blue-700"
                   @click="openEditPayment(p)"
-                  title="Edytuj"
+                  :title="t('common.edit')"
                 >
                   ✏️
                 </button>
@@ -236,7 +236,7 @@
                 <button
                   class="text-red-500 hover:text-red-700"
                   @click="deletePayment(p.id)"
-                  title="Usuń"
+                  :title="t('common.delete')"
                 >
                   🗑️
                 </button>
@@ -250,19 +250,19 @@
       </div>
       <Dialog
         v-model:visible="editDialog"
-        header="Edytuj cel"
+        :header="t('savings.dialog.editGoal')"
         modal
         class="w-[90vw] md:w-[30rem]"
       >
         <div class="space-y-4">
 
           <div>
-            <label class="block text-sm font-medium mb-1">Nazwa</label>
+            <label class="block text-sm font-medium mb-1">{{ t('savings.details.title') }}</label>
             <InputText v-model="editForm.name" class="w-full" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">Kwota docelowa</label>
+            <label class="block text-sm font-medium mb-1">{{ t('savings.target') }}</label>
             <InputNumber
               v-model="editForm.target_amount"
               mode="currency"
@@ -273,13 +273,13 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">Deadline</label>
+            <label class="block text-sm font-medium mb-1">{{ t('savings.deadline') }}</label>
             <Calendar v-model="editForm.deadline" showIcon class="w-full" />
           </div>
 
           <div class="flex justify-end gap-2 mt-4">
-            <Button label="Anuluj" class="p-button-text" @click="editDialog = false" />
-            <Button label="Zapisz" class="p-button-success" @click="saveEdit" />
+            <Button :label="t('common.cancel')" class="p-button-text" @click="editDialog = false" />
+            <Button :label="t('common.save')" class="p-button-success" @click="saveEdit" />
           </div>
 
         </div>
@@ -331,6 +331,7 @@ import InputText from 'primevue/inputtext'
 import Calendar from 'primevue/calendar'
 import Chart from 'primevue/chart'
 import { useToast } from 'primevue/usetoast'
+import { useI18n } from 'vue-i18n'
 
 
 const API = 'http://localhost:5000/api'
@@ -344,6 +345,8 @@ const toast = useToast()
 const goal = ref({})
 const payments = ref([])
 const paymentAmount = ref(null)
+
+const { t } = useI18n()
 
 const chartMode = ref('count') // count, sum
 
@@ -374,12 +377,7 @@ function formatDate(d) {
 }
 
 function translateStatus(s) {
-  return {
-    in_progress: 'W realizacji',
-    completed: 'Zakończony',
-    canceled: 'Przerwany',
-    failed: 'Nieudany'
-  }[s] || s
+  return t(`savings.statuses.${s}`)
 }
 
 const progress = computed(() => {
@@ -503,7 +501,7 @@ async function loadPayments() {
 
 async function addPayment() {
   if (!paymentAmount.value || paymentAmount.value <= 0) {
-    return alert('Podaj poprawną kwotę')
+    return alert(t('savings.validation.amount'))
   }
 
   const res = await fetch(`${API}/savings/${route.params.id}/payments`, {
@@ -513,7 +511,7 @@ async function addPayment() {
   })
 
   if (!res.ok) {
-    return alert('Nie udało się dodać wpłaty.')
+    return alert(t('savings.errors.addPayment'))
   }
 
   const data = await res.json();
@@ -556,7 +554,7 @@ async function savePaymentEdit() {
   )
 
   if (!res.ok) {
-    return alert('Nie udało się zapisać zmian')
+    return alert(t('savings.errors.saveEdit'))
   }
 
   editPaymentDialog.value = false
@@ -565,7 +563,7 @@ async function savePaymentEdit() {
 }
 
 async function deletePayment(paymentId) {
-  if (!confirm('Usunąć tę wpłatę?')) return
+  if (!confirm(t('savings.confirmDelete'))) return
 
   const res = await fetch(
     `${API}/savings/${route.params.id}/payments/${paymentId}`,
@@ -576,7 +574,7 @@ async function deletePayment(paymentId) {
   )
 
   if (!res.ok) {
-    return alert('Nie udało się usunąć wpłaty')
+    return alert(t('savings.errors.deleteGoal'))
   }
 
   await loadGoal()
@@ -585,7 +583,7 @@ async function deletePayment(paymentId) {
 
 
 async function deleteGoal() {
-  if (!confirm('Czy na pewno chcesz usunąć ten cel?')) return
+  if (!confirm(t('savings.confirmDelete'))) return
 
   const res = await fetch(`${API}/savings/${route.params.id}`, {
     method: 'DELETE',

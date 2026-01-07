@@ -2,26 +2,27 @@
   <div class="min-h-screen bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300 p-6">
     <div class="bg-white/90 backdrop-blur-lg shadow-xl rounded-2xl p-8">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">🧾 Twoje wydatki</h1>
+        <h1 class="text-3xl font-bold text-gray-800">🧾 {{ t('expenses.title') }}</h1>
         <div class="flex gap-3">
-          <Button label="➕ Dodaj wydatek" class="p-button-success" @click="showDialog = true" />
-          <Button label="📊 Eksport do Excel" class="p-button-outlined" @click="exportXLS"/>
-          <Button label="📊 Eksport do PDF" class="p-button-outlined" @click="exportPDF"/>
+          <Button :label="'➕' + t('expenses.add')" class="p-button-success" @click="showDialog = true" />
+          <Button :label="'📊' + t('expenses.exportExcel')" class="p-button-outlined" @click="exportXLS"/>
+          <Button :label="'📊' + t('expenses.add')" class="p-button-outlined" @click="exportPDF"/>
         </div>  
       </div>
 
       <DataTable :value="expenses" stripedRows responsiveLayout="scroll">
-        <Column field="budget_name" header="Budżet" />
-        <Column field="category" header="Kategoria" />
-        <Column field="amount" header="Kwota" />
-        <Column field="description" header="Opis" />
-        <Column field="date" header="Data" />
-        <Column header="Akcje">
+        <Column field="budget_name" :header="t('expenses.columns.budget')" />
+        <Column field="category" :header="t('expenses.columns.category')" />
+        <Column field="amount" :header="t('expenses.columns.amount')" />
+        <Column field="description" :header="t('expenses.columns.description')" />
+        <Column field="date" :header="t('expenses.columns.date')" />
+        <Column :header="t('expenses.columns.actions')">
           <template #body="slotProps">
             <Button
               icon="pi pi-trash"
               class="p-button-rounded p-button-danger p-button-sm"
               @click="deleteExpense(slotProps.data.id)"
+              v-tooltip="t('expenses.actions.delete')"
             />
           </template>
         </Column>
@@ -29,44 +30,44 @@
     </div>
 
     <!-- DIALOG DODAWANIA WYDATKU -->
-    <Dialog v-model:visible="showDialog" header="Nowy wydatek" modal class="w-[90vw] md:w-[30rem]">
+    <Dialog v-model:visible="showDialog" :header="t('expenses.dialog.title')" modal class="w-[90vw] md:w-[30rem]">
       <div class="flex flex-col gap-3">
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Budżet</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('expenses.form.budget') }}</label>
           <Dropdown
             v-model="form.budget_id"
             :options="budgets"
             optionLabel="name"
             optionValue="id"
             class="w-full"
-            placeholder="Wybierz budżet"
+            :placeholder="t('expenses.form.selectBudget')"
           />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Kategoria</label>
-          <InputText v-model="form.category" class="w-full" placeholder="np. Jedzenie" />
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('expenses.form.category') }}</label>
+          <InputText v-model="form.category" class="w-full" :placeholder=" t('expenses.form.categoryPlaceholder') " />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Kwota</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('expenses.form.amount') }}</label>
           <InputNumber v-model="form.amount" mode="currency" currency="PLN" locale="pl-PL" class="w-full" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Opis</label>
-          <InputText v-model="form.description" class="w-full" placeholder="np. Zakupy w Lidlu" />
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('expenses.form.description') }}</label>
+          <InputText v-model="form.description" class="w-full" :placeholder="t('expenses.form.descriptionPlaceholder')" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('expenses.form.date') }}</label>
           <Calendar v-model="form.date" showIcon dateFormat="yy-mm-dd" class="w-full" />
         </div>
 
         <div class="flex justify-end gap-2 mt-3">
-          <Button label="Anuluj" class="p-button-text" @click="showDialog = false" />
-          <Button label="Zapisz" class="p-button-success" @click="addExpense" />
+          <Button :label=" t('common.cancel')" class="p-button-text" @click="showDialog = false" />
+          <Button :label="t('common.save')" class="p-button-success" @click="addExpense" />
         </div>
 
       </div>
@@ -85,6 +86,7 @@ import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
 import { useToast } from 'primevue/usetoast'
+import { useI18n } from 'vue-i18n'
 
 const API = 'http://localhost:5000/api'
 
@@ -92,6 +94,7 @@ const expenses = ref([])
 const budgets = ref([])
 const showDialog = ref(false)
 const toast = useToast()
+const { t } = useI18n()
 
 const form = ref({
   budget_id: null,
@@ -209,8 +212,8 @@ async function addExpense() {
   if (data.achievementUnlocked) {
   toast.add({
     severity: 'success',
-    summary: '🏆 Osiągnięcie odblokowane!',
-    detail: data.achievementName ?? 'Nowe osiągnięcie',
+    summary: t('expenses.achievement.unlocked'),
+    detail: data.achievementName ?? t('expenses.achievement.default'),
     life: 4000
   })
 }

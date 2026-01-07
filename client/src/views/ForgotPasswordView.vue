@@ -2,19 +2,19 @@
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300">
     <div class="w-full max-w-md bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl p-8">
       <div class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Resetuj hasło</h1>
-        <p class="text-sm text-gray-500 mt-1">Podaj swój e-mail, aby otrzymać link do zmiany hasła.</p>
+        <h1 class="text-3xl font-bold text-gray-800">{{ t('forgot.title') }}</h1>
+        <p class="text-sm text-gray-500 mt-1">{{ t('forgot.subtitle') }}</p>
       </div>
 
       <div class="space-y-4">
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">E-mail</label>
+          <label class="text-sm font-medium text-gray-700">{{ t('forgot.email') }}</label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-envelope" />
             <InputText
               v-model="email"
               type="email"
-              placeholder="you@example.com"
+              :placeholder="t('forgot.emailPlaceholder')"
               class="w-full"
             />
           </span>
@@ -24,7 +24,7 @@
         <InlineMessage v-if="ok" severity="success" class="w-full">{{ ok }}</InlineMessage>
 
         <Button
-          label="Wyślij link resetujący"
+          :label="t('forgot.send') "
           :loading="loading"
           class="w-full bg-emerald-500 border-none hover:bg-emerald-600 transition-all duration-300"
           @click="sendLink"
@@ -32,7 +32,7 @@
 
         <div class="text-center text-sm text-gray-600 mt-3 space-y-1">
           <RouterLink to="/login" class="hover:text-emerald-600 block">
-            Wróć do logowania
+            {{ t('forgot.back') }}
           </RouterLink>
         </div>
       </div>
@@ -44,6 +44,7 @@ import { ref } from 'vue'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import InlineMessage from 'primevue/inlinemessage'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ components: { InputText, Button, InlineMessage } })
 
@@ -53,10 +54,12 @@ const ok = ref('')
 const loading = ref(false)
 const API = 'http://localhost:5000/api'
 
+const { t } = useI18n()
+
 const sendLink = async () => {
   error.value = ''
   ok.value = ''
-  if (!email.value) return (error.value = 'Podaj adres e-mail.')
+  if (!email.value) return (error.value = t('forgot.validation.email'))
 
   loading.value = true
   try {

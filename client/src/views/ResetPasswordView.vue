@@ -1,14 +1,23 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300">
     <div class="w-full max-w-md bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl p-8">
+
+      <!-- Header -->
       <div class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Ustaw nowe hasło</h1>
-        <p class="text-sm text-gray-500 mt-1">Wprowadź nowe hasło, aby odzyskać dostęp do konta.</p>
+        <h1 class="text-3xl font-bold text-gray-800">
+          {{ t('reset.title') }}
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">
+          {{ t('reset.subtitle') }}
+        </p>
       </div>
 
       <div class="space-y-4">
+        <!-- New password -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">Nowe hasło</label>
+          <label class="text-sm font-medium text-gray-700">
+            {{ t('reset.password') }}
+          </label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-lock" />
             <Password
@@ -21,8 +30,11 @@
           </span>
         </div>
 
+        <!-- Repeat password -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">Powtórz hasło</label>
+          <label class="text-sm font-medium text-gray-700">
+            {{ t('reset.password2') }}
+          </label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-lock" />
             <Password
@@ -35,11 +47,17 @@
           </span>
         </div>
 
-        <InlineMessage v-if="error" severity="error" class="w-full">{{ error }}</InlineMessage>
-        <InlineMessage v-if="ok" severity="success" class="w-full">{{ ok }}</InlineMessage>
+        <!-- Messages -->
+        <InlineMessage v-if="error" severity="error" class="w-full">
+          {{ error }}
+        </InlineMessage>
+        <InlineMessage v-if="ok" severity="success" class="w-full">
+          {{ ok }}
+        </InlineMessage>
 
+        <!-- Button -->
         <Button
-          label="Zmień hasło"
+          :label="t('reset.submit')"
           :loading="loading"
           class="w-full bg-emerald-500 border-none hover:bg-emerald-600 transition-all duration-300"
           @click="resetPass"
@@ -52,49 +70,78 @@
 <script setup>
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
 import Password from 'primevue/password'
 import Button from 'primevue/button'
 import InlineMessage from 'primevue/inlinemessage'
 
 defineOptions({ components: { Password, Button, InlineMessage } })
 
+const { t } = useI18n()
+
 const route = useRoute()
 const router = useRouter()
+
 const token = route.query.token || ''
 const password = ref('')
 const password2 = ref('')
 const loading = ref(false)
 const error = ref('')
 const ok = ref('')
+
 const API = 'http://localhost:5000/api'
 
 const resetPass = async () => {
-  if (!password.value || !password2.value) return (error.value = 'Uzupełnij oba pola.')
-  if (password.value !== password2.value) return (error.value = 'Hasła różnią się.')
-  if (password.value.length < 6) return (error.value= 'Hasło musi miec co najmniej 6 znaków')
-  if (!token) return (error.value = 'Brak tokenu resetującego.')
-
-  loading.value = true
   error.value = ''
   ok.value = ''
 
+  if (!password.value || !password2.value) {
+    error.value = t('reset.validation.required')
+    return
+  }
+  if (password.value !== password2.value) {
+    error.value = t('reset.validation.mismatch')
+    return
+  }
+  if (password.value.length < 6) {
+    error.value = t('reset.validation.minLength')
+    return
+  }
+  if (!token) {
+    error.value = t('reset.validation.noToken')
+    return
+  }
+
+  loading.value = true
   try {
     const res = await fetch(`${API}/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, newPassword: password.value }),
+      body: JSON.stringify({
+        token,
+        newPassword: password.value
+      })
     })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error)
-    ok.value = data.ok
+
+    const data = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      error.value = data?.error || t('reset.error')
+      return
+    }
+
+    ok.value = t('reset.success')
     setTimeout(() => router.push('/login'), 2000)
+
   } catch (e) {
-    error.value = e.message || 'Błąd połączenia z API.'
+    error.value = t('reset.error')
   } finally {
     loading.value = false
   }
 }
 </script>
+
 <style scoped>
 .p-input-icon-left > i {
   color: #6b7280;

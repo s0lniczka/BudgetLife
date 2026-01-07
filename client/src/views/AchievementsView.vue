@@ -3,11 +3,11 @@
     <div class="max-w-6xl mx-auto bg-white/85 backdrop-blur-lg rounded-2xl shadow-2xl p-6 md:p-8">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900">
-          🏆 Osiągnięcia
+          🏆 {{ t('achievements.title') }}
         </h1>
       </div>
 
-      <div v-if="loading" class="text-gray-600">Ładowanie…</div>
+      <div v-if="loading" class="text-gray-600">{{t('achievements.loading')}}</div>
 
       <div v-else class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
@@ -32,12 +32,12 @@
           <div class="mt-4">
             <Tag
               :severity="unlockedIds.has(a.id) ? 'success' : 'secondary'"
-              :value="unlockedIds.has(a.id) ? 'Odblokowane' : 'Zablokowane'"
+              :value="unlockedIds.has(a.id) ? t('achievements.status.unlocked') : t('achievements.status.locked')"
             />
           </div>
 
           <div v-if="unlockedMap.get(a.id)?.date_awarded" class="mt-2 text-xs text-gray-500">
-            Zdobyto: {{ new Date(unlockedMap.get(a.id).date_awarded).toLocaleString() }}
+            {{t('achievements.earnedAt')}}: {{ new Date(unlockedMap.get(a.id).date_awarded).toLocaleString() }}
           </div>
         </div>
       </div>
@@ -48,6 +48,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import Tag from 'primevue/tag'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ components: { Tag } })
 
@@ -55,6 +56,7 @@ const API = 'http://localhost:5000/api'
 const loading = ref(true)
 const all = ref([])
 const mine = ref([])
+const { t } = useI18n()
 
 
 const unlockedIds = ref(new Set())

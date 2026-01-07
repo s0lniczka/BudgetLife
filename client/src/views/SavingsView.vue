@@ -4,8 +4,8 @@
 
       <!-- HEADER -->
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">🏆 Twoje cele oszczędnościowe</h1>
-        <Button label="➕ Nowy cel" class="p-button-success" @click="showDialog = true" />
+        <h1 class="text-3xl font-bold text-gray-800">🏆 {{ t('savings.title') }}</h1>
+        <Button :label="'➕' + t('savings.new') " class="p-button-success" @click="showDialog = true" />
       </div>
 
       <div class="flex gap-2 mb-6 flex-wrap">
@@ -30,7 +30,7 @@
 
       <!-- LISTA CELÓW -->
       <div v-if="goals.length === 0" class="text-gray-600 text-center py-10">
-        Brak celów oszczędnościowych. Dodaj pierwszy cel!
+         t('savings.filters.all') 
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -49,7 +49,7 @@
               class="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold"
               :class="statusMap[g.status].class"
             >
-              <span>{{ statusMap[g.status].label }}</span>
+              <span>{{ statusMap[g.status]?.label }}</span>
               <span class="opacity-70">|</span>
               <span>{{ formatDate(g.deadline) }}</span>
             </div>
@@ -74,7 +74,7 @@
           <!-- BUTTONS -->
           <div class="flex justify-between mt-4">
             <Button
-              label="Szczegóły"
+              :label="t('savings.details')"
               class="p-button-sm p-button-outlined"
               @click="goToGoal(g.id)"
             />
@@ -92,19 +92,19 @@
     <!-- DIALOG NOWEGO CELU -->
     <Dialog
       v-model:visible="showDialog"
-      header="Nowy cel"
+      :header="t('savings.form.new')"
       modal
       class="w-[90vw] md:w-[30rem]"
     >
       <div class="flex flex-col gap-3">
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nazwa celu</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('savings.form.name') }}</label>
           <InputText v-model="form.name" class="w-full" placeholder="np. Nowy komputer" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Kwota docelowa</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('savings.form.target') }}</label>
           <InputNumber
             v-model="form.target_amount"
             mode="currency"
@@ -115,13 +115,13 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Termin</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('savings.form.deadline') }}</label>
           <Calendar v-model="form.deadline" showIcon dateFormat="yy-mm-dd" class="w-full" />
         </div>
 
         <div class="flex justify-end gap-2 mt-3">
-          <Button label="Anuluj" class="p-button-text" @click="showDialog = false" />
-          <Button label="Zapisz" class="p-button-success" @click="createGoal" />
+          <Button :label="t('common.cancel')" class="p-button-text" @click="showDialog = false" />
+          <Button :label="t('common.save')" class="p-button-success" @click="createGoal" />
         </div>
 
       </div>
@@ -137,6 +137,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Calendar from 'primevue/calendar'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 const API = "http://localhost:5000/api"
 
@@ -144,6 +145,8 @@ const goals = ref([])
 const showDialog = ref(false)
 const router = useRouter()
 const activeFilter = ref('all')
+
+const { t } = useI18n()
 
 
 const form = ref({
@@ -154,27 +157,27 @@ const form = ref({
 
 const filters = [
   {
-    label: 'Wszystkie',
+    label: t('savings.filters.all') ,
     value: 'all',
     activeClass: 'bg-gray-800 text-white'
   },
   {
-    label: 'W realizacji',
+    label:  t('savings.filters.in_progress'),
     value: 'in_progress',
     activeClass: 'bg-blue-500 text-white'
   },
   {
-    label: 'Zakończone',
+    label:  t('savings.filters.completed') ,
     value: 'completed',
     activeClass: 'bg-emerald-500 text-white'
   },
   {
-    label: 'Anulowane',
+    label:  t('savings.filters.canceled') ,
     value: 'canceled',
     activeClass: 'bg-yellow-500 text-white'
   },
   {
-    label: 'Nieudane',
+    label:  t('savings.filters.failed') ,
     value: 'failed',
     activeClass: 'bg-red-500 text-white'
   }
@@ -182,19 +185,19 @@ const filters = [
 
 const statusMap = {
   in_progress: {
-    label: 'W realizacji',
+    label:  t('savings.filters.in_progress'),
     class: 'bg-blue-100 text-blue-700'
   },
   completed: {
-    label: 'Zakończony',
+    label:  t('savings.filters.completed') ,
     class: 'bg-emerald-100 text-emerald-700'
   },
   canceled: {
-    label: 'Anulowany',
+    label:  t('savings.filters.canceled') ,
     class: 'bg-yellow-100 text-yellow-700'
   },
   failed: {
-    label: 'Nieudany',
+    label:  t('savings.filters.failed') ,
     class: 'bg-red-100 text-red-700'
   }
 }
@@ -230,11 +233,11 @@ const counts = computed(() => ({
 
 async function createGoal() {
   if (!form.value.name)
-    return alert("Podaj nazwę celu")
+    return alert(t('savings.validation.name'))
   if (!form.value.target_amount || form.value.target_amount <= 0)
-    return alert("Podaj poprawną kwotę docelową")
+    return alert(t('savings.validation.target'))
   if (!form.value.deadline)
-    return alert("Wybierz termin")
+    return alert(t('savings.validation.deadline'))
 
   const d= form.value.deadline
 
@@ -254,7 +257,7 @@ async function createGoal() {
 
   if (!res.ok) {
     const e = await res.json().catch(() => ({}))
-    return alert(e.error || "Błąd podczas tworzenia celu")
+    return alert(e.error || t('savings.createError'))
   }
 
   showDialog.value = false
@@ -263,7 +266,7 @@ async function createGoal() {
 }
 
 async function deleteGoal(id) {
-  if (!confirm("Czy na pewno chcesz usunąć ten cel?")) return
+  if (!confirm(t('savings.confirmDelete'))) return
   await fetch(`${API}/savings/${id}`, { method: "DELETE", headers: authHeader() })
   await loadGoals()
 }

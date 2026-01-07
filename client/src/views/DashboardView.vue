@@ -8,13 +8,13 @@
         <div class="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
           <div>
             <h1 class="text-3xl font-extrabold text-gray-900">
-              <span class="mr-2">👋</span>Witaj,
+              <span class="mr-2">👋</span>{{ t('dashboard.welcome') }},
               <span class="text-emerald-600">{{ user?.username }}</span>!
             </h1>
             <p class="text-gray-600 mt-1">
-              Twój e-mail: <span class="font-medium text-gray-800">{{ user?.email }}</span>
+              {{ t('dashboard.email') }}: <span class="font-medium text-gray-800">{{ user?.email }}</span>
               <span class="mx-2">|</span>
-              Waluta: <span class="font-medium">{{ user?.currency }}</span>
+              {{ t('dashboard.currency') }}: <span class="font-medium">{{ user?.currency }}</span>
             </p>
           </div>
         </div>
@@ -25,17 +25,17 @@
           <!-- LEFT SUMMARY -->
           <div class="order-2 lg:order-1 lg:col-span-2 grid sm:grid-cols-3 gap-6">
             <div class="rounded-xl bg-gray-900 text-white p-5">
-              <div class="font-semibold flex items-center gap-2"><span>🪙</span> Saldo</div>
+              <div class="font-semibold flex items-center gap-2"><span>🪙</span> {{ t('dashboard.balance') }}</div>
               <div class="text-2xl font-bold text-emerald-400 mt-2">{{ formatCurrency(balance) }}</div>
             </div>
 
             <div class="rounded-xl bg-gray-900 text-white p-5">
-              <div class="font-semibold flex items-center gap-2"><span>📚</span> Aktywne budżety</div>
+              <div class="font-semibold flex items-center gap-2"><span>📚</span> {{ t('dashboard.activeBudgets') }}</div>
               <div class="text-2xl font-bold text-sky-400 mt-2">{{ budgetsCount }}</div>
             </div>
 
             <div class="rounded-xl bg-gray-900 text-white p-5">
-              <div class="font-semibold flex items-center gap-2"><span>🧾</span> Wydatki w tym miesiącu</div>
+              <div class="font-semibold flex items-center gap-2"><span>🧾</span> {{ t('dashboard.monthExpenses') }}</div>
               <div class="text-2xl font-bold text-indigo-400 mt-2">{{ expensesCount }}</div>
             </div>
           </div>
@@ -45,14 +45,14 @@
             <div class="rounded-xl bg-white border border-black/5 shadow p-4 relative">
 
               <div class="flex justify-between items-center mb-2">
-                <h2 class="text-lg font-semibold text-gray-800">📊 Struktura wydatków</h2>
+                <h2 class="text-lg font-semibold text-gray-800">📊 {{ t('dashboard.expensesStructure') }}</h2>
 
                 <Dropdown
                   v-model="selectedBudget"
                   :options="budgets"
                   optionLabel="name"
                   optionValue="id"
-                  placeholder="Wybierz budżet"
+                  :placeholder="t('dashboard.selectBudget') "
                   class="w-56"
                   showClear
                 />
@@ -83,9 +83,9 @@
 
         <!-- RECENT TRANSACTIONS -->
         <div class="mt-8 bg-white rounded-xl p-4 shadow-inner">
-          <h2 class="text-xl font-semibold text-gray-800 mb-4">Ostatnie transakcje</h2>
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('dashboard.recentTransactions') }}</h2>
 
-          <div v-if="loadingTransactions" class="text-gray-500">Ładowanie danych...</div>
+          <div v-if="loadingTransactions" class="text-gray-500">{{ t('dashboard.loading') }}</div>
 
           <div v-else>
             <!-- DataTable ALWAYS mounted = zero flicker -->
@@ -94,13 +94,13 @@
               stripedRows
               responsiveLayout="scroll"
             >
-              <Column field="date" header="Data" />
-              <Column field="category" header="Kategoria" />
-              <Column field="amount" header="Kwota" />
+              <Column field="date" :header=" t('dashboard.table.date') " />
+              <Column field="category" :header="t('dashboard.table.category')" />
+              <Column field="amount" :header="t('dashboard.table.amount')" />
             </DataTable>
 
             <div v-if="transactions.length === 0" class="text-gray-500 mt-2">
-              Brak transakcji dla wybranego budżetu.
+              t('dashboard.table.date')
             </div>
           </div>
 
@@ -117,6 +117,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Chart from 'primevue/chart'
 import Dropdown from 'primevue/dropdown'
+import {useI18n} from "vue-i18n"
 
 const API = 'http://localhost:5000/api'
 
@@ -124,6 +125,7 @@ const API = 'http://localhost:5000/api'
 const user = ref(null)
 const budgets = ref([])
 const selectedBudget = ref(null)
+const {t} = useI18n()
 
 const balance = ref(0)
 const budgetsCount = ref(0)

@@ -2,45 +2,58 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300">
     <div class="w-full max-w-md bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl p-8">
-      <!-- Nagłówek -->
+
+      <!-- Header -->
       <div class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Utwórz konto</h1>
-        <p class="text-sm text-gray-500 mt-1">Dołącz do <span class="text-emerald-600 font-semibold">BudgetLife</span> i zacznij zarządzać swoimi finansami!</p>
+        <h1 class="text-3xl font-bold text-gray-800">
+          {{ t('register.title') }}
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">
+          {{ t('register.subtitlePrefix') }}
+          <span class="text-emerald-600 font-semibold">BudgetLife</span>
+          {{ t('register.subtitleSuffix') }}
+        </p>
       </div>
 
-      <!-- Formularz -->
+      <!-- Form -->
       <div class="space-y-4">
-        <!-- Nazwa użytkownika -->
+        <!-- Username -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">Nazwa użytkownika</label>
+          <label class="text-sm font-medium text-gray-700">
+            {{ t('register.username') }}
+          </label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-user" />
             <InputText
               v-model="username"
               type="text"
-              placeholder="Twoja nazwa"
+              :placeholder="t('register.usernamePlaceholder')"
               class="w-full"
             />
           </span>
         </div>
 
-        <!-- E-mail -->
+        <!-- Email -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">E-mail</label>
+          <label class="text-sm font-medium text-gray-700">
+            {{ t('register.email') }}
+          </label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-envelope" />
             <InputText
               v-model="email"
               type="email"
-              placeholder="you@example.com"
+              :placeholder="t('register.emailPlaceholder')"
               class="w-full"
             />
           </span>
         </div>
 
-        <!-- Hasło -->
+        <!-- Password -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">Hasło</label>
+          <label class="text-sm font-medium text-gray-700">
+            {{ t('register.password') }}
+          </label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-lock" />
             <Password
@@ -53,9 +66,11 @@
           </span>
         </div>
 
-        <!-- Powtórz hasło -->
+        <!-- Repeat password -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">Powtórz hasło</label>
+          <label class="text-sm font-medium text-gray-700">
+            {{ t('register.password2') }}
+          </label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-lock" />
             <Password
@@ -68,22 +83,26 @@
           </span>
         </div>
 
-        <!-- Komunikaty -->
-        <InlineMessage v-if="error" severity="error" class="w-full">{{ error }}</InlineMessage>
-        <InlineMessage v-if="ok" severity="success" class="w-full">{{ ok }}</InlineMessage>
+        <!-- Messages -->
+        <InlineMessage v-if="error" severity="error" class="w-full">
+          {{ error }}
+        </InlineMessage>
+        <InlineMessage v-if="ok" severity="success" class="w-full">
+          {{ ok }}
+        </InlineMessage>
 
-        <!-- Przycisk -->
+        <!-- Button -->
         <Button
-          label="Zarejestruj się"
+          :label="t('register.submit')"
           :loading="loading"
           class="w-full bg-emerald-500 border-none hover:bg-emerald-600 transition-all duration-300"
           @click="register"
         />
 
-        <!-- Linki -->
+        <!-- Links -->
         <div class="text-center text-sm text-gray-600 mt-3 space-y-1">
           <RouterLink to="/login" class="hover:text-emerald-600 block">
-            Masz już konto? Zaloguj się
+            {{ t('register.haveAccount') }}
           </RouterLink>
         </div>
       </div>
@@ -93,17 +112,18 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
-// PrimeVue komponenty
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
 import InlineMessage from 'primevue/inlinemessage'
 
-// rejestracja komponentów lokalnie
 defineOptions({ components: { InputText, Password, Button, InlineMessage } })
 
-const username=ref('')
+const { t } = useI18n()
+
+const username = ref('')
 const email = ref('')
 const password = ref('')
 const password2 = ref('')
@@ -111,24 +131,23 @@ const loading = ref(false)
 const error = ref('')
 const ok = ref('')
 
-// 👉 dopasuj URL, jeśli masz inny port
 const API = 'http://localhost:5000/api'
 
 const register = async () => {
   error.value = ''
   ok.value = ''
 
-  // prosta walidacja po stronie klienta
+  // client-side validation
   if (!username.value || !email.value || !password.value) {
-    error.value = 'Podaj nazwę użytkownika, e-mail i hasło.'
+    error.value = t('register.validation.required')
     return
   }
   if (password.value.length < 6) {
-    error.value = 'Hasło musi mieć co najmniej 6 znaków.'
+    error.value = t('register.validation.passwordMin')
     return
   }
   if (password.value !== password2.value) {
-    error.value = 'Hasła różnią się.'
+    error.value = t('register.validation.passwordMismatch')
     return
   }
 
@@ -137,30 +156,37 @@ const register = async () => {
     const res = await fetch(`${API}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: username.value, email: email.value, password: password.value })
+      body: JSON.stringify({
+        username: username.value,
+        email: email.value,
+        password: password.value
+      })
     })
 
-    const data = await res.json()
+    const data = await res.json().catch(() => ({}))
 
     if (!res.ok) {
-      // backend może zwracać {error: "..."} lub {errors:[...]}
-      error.value = data?.error || data?.errors?.[0]?.msg || 'Rejestracja nie powiodła się.'
+      // backend może zwrócić swój komunikat — pokaż go, a jak nie ma, to daj i18n fallback
+      error.value =
+        data?.error ||
+        data?.errors?.[0]?.msg ||
+        t('register.validation.failed')
       return
     }
 
-    // jeśli Twój backend zwraca token od razu, możesz go zapisać:
     if (data?.token) localStorage.setItem('token', data.token)
 
-    ok.value = `Konto ${username.value} utworzone! Sprawdź e-mail (jeśli wymagane) lub przejdź do logowania.`
+    ok.value = t('register.success', { username: username.value })
   } catch (e) {
-    error.value = 'Błąd połączenia z API.'
+    error.value = t('register.error')
   } finally {
     loading.value = false
   }
 }
 </script>
+
 <style scoped>
 .p-input-icon-left > i {
-  color: #6b7280; /* szary */
+  color: #6b7280;
 }
 </style>

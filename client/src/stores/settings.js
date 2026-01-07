@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n'
 import { defineStore } from 'pinia'
 
 export const useSettingsStore = defineStore('settings', {
@@ -36,6 +37,12 @@ export const useSettingsStore = defineStore('settings', {
       })
       const data = await res.json()
       this.points = data.points
+    },
+
+    setLanguage(lang) {
+      this.language = lang
+      localStorage.setItem('language', lang)
+      i18n.global.locale.value = lang
     }
   }
 })

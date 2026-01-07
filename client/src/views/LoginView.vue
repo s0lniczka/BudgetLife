@@ -5,20 +5,20 @@
       <!-- Logo / Nagłówek -->
       <div class="text-center mb-6">
         <h1 class="text-3xl font-bold text-gray-800">Budget<span class="text-emerald-600">Life</span></h1>
-        <p class="text-sm text-gray-500 mt-1">Witaj ponownie w swoim budżecie!</p>
+        <p class="text-sm text-gray-500 mt-1">{{ t('login.subtitle') }}</p>
       </div>
 
       <!-- Formularz logowania -->
       <div class="space-y-4">
         <!-- E-mail -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">E-mail</label>
+          <label class="text-sm font-medium text-gray-700">{{ t('login.email') }}</label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-envelope" />
             <InputText
               v-model="email"
               type="email"
-              placeholder="you@example.com"
+              :placeholder="t('login.emailPlaceholder') "
               class="w-full"
             />
           </span>
@@ -26,7 +26,7 @@
 
         <!-- Hasło -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">Hasło</label>
+          <label class="text-sm font-medium text-gray-700">{{ t('login.password') }}</label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-lock" />
             <Password
@@ -45,7 +45,7 @@
 
         <!-- Przycisk logowania -->
         <Button
-          label="Zaloguj się"
+          :label="t('login.submit')"
           :loading="loading"
           class="w-full bg-emerald-500 border-none hover:bg-emerald-600 transition-all duration-300"
           @click="login"
@@ -54,10 +54,10 @@
         <!-- Linki -->
         <div class="text-center text-sm text-gray-600 mt-3 space-y-1">
           <RouterLink to="/forgot-password" class="hover:text-emerald-600 block">
-            Nie pamiętasz hasła?
+            {{ t('login.forgot') }}
           </RouterLink>
           <RouterLink to="/register" class="hover:text-emerald-600 block">
-            Nie masz konta? Zarejestruj się
+            {{ t('login.register') }}
           </RouterLink>
         </div>
       </div>
@@ -68,6 +68,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 // PrimeVue komponenty
 import InputText from 'primevue/inputtext'
@@ -83,6 +84,8 @@ const loading = ref(false)
 const error = ref('')
 const ok = ref('')
 
+const { t } = useI18n()
+
 const router = useRouter()
 const API = 'http://localhost:5000/api'
 
@@ -91,7 +94,7 @@ const login = async () => {
   ok.value = ''
 
   if (!email.value || !password.value) {
-    error.value = 'Podaj e-mail i hasło.'
+    error.value = t('login.validation.required') 
     return 
   }
 
@@ -107,13 +110,13 @@ const login = async () => {
     const data = await res.json()
 
     if (!res.ok) {
-      error.value = data?.error || 'Nieprawidłowy e-mail lub hasło.'
+      error.value = data?.error || t('login.validation.invalid') 
       return
     }
 
     // jeśli logowanie się udało — zapisz token
     localStorage.setItem('token', data.token)
-    ok.value = `Zalogowano jako ${data.user.username}.`
+    ok.value = t('login.success',  { username: data.user.username})
 
     // przekierowanie (np. na dashboard)
     setTimeout(() => router.push('/dashboard'), 1500)

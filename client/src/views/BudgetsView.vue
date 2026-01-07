@@ -2,32 +2,32 @@
   <div class="min-h-screen bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300 p-6">
     <div class="bg-white/90 backdrop-blur-lg shadow-xl rounded-2xl p-8">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">💰 Twoje budżety</h1>
-        <Button label="➕ Nowy budżet" class="p-button-success" @click="showDialog = true" />
+        <h1 class="text-3xl font-bold text-gray-800">💰 {{ t('budgets.title') }}</h1>
+        <Button :label="'➕' +  t('budgets.new')" class="p-button-success" @click="showDialog = true" />
       </div>
 
       <DataTable :value="budgets" stripedRows responsiveLayout="scroll">
-        <Column field="name" header="Nazwa budżetu" />
-        <Column field="month" header="Miesiąc" />
-        <Column field="planned_income" header="Planowany przychód" />
-        <Column field="planned_expenses" header="Planowane wydatki" />
-        <Column field="actual_income" header="Rzeczywisty przychód" />
-        <Column field="actual_expenses" header="Rzeczywiste wydatki" />
+        <Column field="name" :header="t('budgets.columns.name')" />
+        <Column field="month" :header="t('budgets.columns.month')" />
+        <Column field="planned_income" :header="t('budgets.columns.plannedIncome')" />
+        <Column field="planned_expenses" :header="t('budgets.columns.plannedExpenses')" />
+        <Column field="actual_income" :header="t('budgets.columns.actualIncome')" />
+        <Column field="actual_expenses" :header="t('budgets.columns.actualExpenses')" />
 
-        <Column header="Akcje">
+        <Column :header="t('budgets.columns.actions')">
           <template #body="slotProps">
             <div class="flex gap-2">
               <Button
                 icon="pi pi-plus-circle"
                 class="p-button-rounded p-button-success p-button-sm"
                 @click="openIncomeDialog(slotProps.data.id)"
-                v-tooltip="'Dodaj przychód'"
+                v-tooltip="t('budgets.actions.addIncome')"
               />
               <Button
                 icon="pi pi-trash"
                 class="p-button-rounded p-button-danger p-button-sm"
                 @click="deleteBudget(slotProps.data.id)"
-                v-tooltip="'Usuń budżet'"
+                v-tooltip="t('budgets.actions.delete')"
               />
             </div>
           </template>
@@ -36,16 +36,16 @@
     </div>
 
     <!-- DIALOG: NOWY BUDŻET -->
-    <Dialog v-model:visible="showDialog" header="Nowy budżet" modal class="w-[90vw] md:w-[30rem]">
+    <Dialog v-model:visible="showDialog" :header="t('budgets.dialogs.new')" modal class="w-[90vw] md:w-[30rem]">
       <div class="flex flex-col gap-3">
         
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nazwa budżetu</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{t('budgets.form.name')}}</label>
           <InputText v-model="form.name" class="w-full" placeholder="np. Dieta, Mieszkanie, Wakacje" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Miesiąc budżetu</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{t('budgets.form.month')}}</label>
           <Calendar
             v-model="form.month"
             view="month"
@@ -57,33 +57,33 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Planowany przychód</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{t('budgets.form.plannedIncome')}}</label>
           <InputNumber v-model="form.planned_income" mode="currency" currency="PLN" locale="pl-PL" :min="0" class="w-full" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Planowane wydatki</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{t('budgets.form.plannedExpenses')}}</label>
           <InputNumber v-model="form.planned_expenses" mode="currency" currency="PLN" locale="pl-PL" :min="0" class="w-full" />
         </div>
 
         <div class="flex justify-end gap-2 mt-3">
-          <Button label="Anuluj" class="p-button-text" @click="showDialog = false" />
-          <Button label="Zapisz" class="p-button-success" @click="addBudget" />
+          <Button :label="t('budgets.dialogs.cancel')" class="p-button-text" @click="showDialog = false" />
+          <Button :label="t('budgets.dialogs.save')" class="p-button-success" @click="addBudget" />
         </div>
       </div>
     </Dialog>
 
     <!-- DIALOG: DODANIE PRZYCHODU -->
-    <Dialog v-model:visible="showIncomeDialog" header="Dodaj przychód" modal class="w-[90vw] md:w-[25rem]">
+    <Dialog v-model:visible="showIncomeDialog" :header="t('budgets.dialogs.addIncome')" modal class="w-[90vw] md:w-[25rem]">
       <div class="flex flex-col gap-3">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Kwota przychodu</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('budgets.form.plannedIncome') }}</label>
           <InputNumber v-model="incomeForm.amount" mode="currency" currency="PLN" locale="pl-PL" :min="1" class="w-full" />
         </div>
 
         <div class="flex justify-end gap-2 mt-3">
-          <Button label="Anuluj" class="p-button-text" @click="showIncomeDialog = false" />
-          <Button label="Zapisz" class="p-button-success" @click="addIncome" />
+          <Button :label="t('budgets.dialogs.cancel')" class="p-button-text" @click="showIncomeDialog = false" />
+          <Button :label="t('budgets.dialogs.save')" class="p-button-success" @click="addIncome" />
         </div>
       </div>
     </Dialog>
@@ -101,6 +101,7 @@ import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
 import { useToast } from 'primevue/usetoast'
+import {useI18n} from 'vue-i18n'
 
 
 const API = 'http://localhost:5000/api'
@@ -108,6 +109,7 @@ const API = 'http://localhost:5000/api'
 const budgets = ref([])
 const showDialog = ref(false)
 const toast = useToast()
+const { t } = useI18n()
 
 
 const form = ref({
@@ -156,13 +158,13 @@ async function addIncome() {
 
 async function addBudget() {
   if (!form.value.name)
-    return alert('Podaj nazwę budżetu.')
+    return alert(t('budgets.validation.name'))
   if (!form.value.month)
-    return alert('Wybierz miesiąc budżetu.')
+    return alert(t('budgets.validation.month'))
   if (!form.value.planned_income || form.value.planned_income <= 0)
-    return alert('Podaj poprawny planowany przychód.')
+    return alert(t('budgets.validation.plannedIncome'))
   if (!form.value.planned_expenses || form.value.planned_expenses < 0)
-    return alert('Podaj planowane wydatki.')
+    return alert(t('budgets.validation.plannedExpenses'))
 
   const payload = {
     ...form.value,
@@ -187,7 +189,7 @@ async function addBudget() {
   if (data.achievementUnlocked) {
     toast.add({
       severity: 'success',
-      summary: '🏆 Osiągnięcie odblokowane!',
+      summary: t('budgets.achievement.unlocked'),
       detail: data.achievementName,
       life: 4000
     })

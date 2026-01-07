@@ -1,0 +1,271 @@
+{
+  "settings": {
+    "title": "Ustawienia",
+    "theme": "Motyw",
+    "currency": "Waluta",
+    "language": "Język",
+    "points": "Punkty za osiągnięcia"
+  },
+  "common": {
+    "add": "Dodaj",
+    "delete": "Usuń",
+    "edit": "Edytuj",
+    "logout": "Wyloguj",
+    "cancel": "Anuluj",
+    "save": "Zapisz"
+  },
+  "menu": {
+    "dashboard": "Dashboard",
+    "budgets": "Budżety",
+    "expenses": "Wydatki",
+    "savings": "Oszczędności",
+    "stats": "Statystyki",
+    "achievements": "Osiągnięcia",
+    "settings": "Ustawienia"
+  },
+  "achievements": {
+    "title": "Osiągnięcia",
+    "loading": "Ładuje osiągnięcia...",
+    "status": {
+        "unlocked": "Odblokowane",
+        "locked": "Zablokowane"
+    },
+    "earnedAt":"Zdobyto"
+  },
+  "budgets": {
+    "title": "Twoje budżety",
+    "new": "Nowy budżet",
+    "columns": {
+      "name": "Nazwa budżetu",
+      "month": "Miesiąc",
+      "plannedIncome": "Planowany przychód",
+      "plannedExpenses": "Planowane wydatki",
+      "actualIncome": "Rzeczywisty przychód",
+      "actualExpenses": "Rzeczywiste wydatki",
+      "actions": "Akcje"
+    },
+    "actions": {
+      "addIncome": "Dodaj przychód",
+      "delete": "Usuń budżet"
+    },
+    "dialogs": {
+      "new": "Nowy budżet",
+      "addIncome": "Dodaj przychód",
+      "save": "Zapisz",
+      "cancel": "Anuluj"
+    },
+    "form": {
+      "name": "Nazwa budżetu",
+      "month": "Miesiąc budżetu",
+      "plannedIncome": "Planowany przychód",
+      "plannedExpenses": "Planowane wydatki"
+    },
+    "validation": {
+      "name": "Podaj nazwę budżetu.",
+      "month": "Wybierz miesiąc budżetu.",
+      "plannedIncome": "Podaj poprawny planowany przychód.",
+      "plannedExpenses": "Podaj planowane wydatki.",
+      "incomeAmount": "Podaj poprawną kwotę przychodu."
+    },
+    "achievement": {
+      "unlocked": "🏆 Osiągnięcie odblokowane!"
+    }
+  },
+  "dashboard": {
+    "welcome": "Witaj",
+    "email": "Twój e-mail",
+    "currency": "Waluta",
+
+    "balance": "Saldo",
+    "activeBudgets": "Aktywne budżety",
+    "monthExpenses": "Wydatki w tym miesiącu",
+
+    "expensesStructure": "Struktura wydatków",
+    "selectBudget": "Wybierz budżet",
+
+    "recentTransactions": "Ostatnie transakcje",
+    "loading": "Ładowanie danych...",
+    "noTransactions": "Brak transakcji dla wybranego budżetu.",
+
+    "table": {
+      "date": "Data",
+      "category": "Kategoria",
+      "amount": "Kwota"
+    }
+  },
+  "expenses": {
+    "title": "Twoje wydatki",
+    "add": "Dodaj wydatek",
+    "exportExcel": "Eksport do Excel",
+    "exportPdf": "Eksport do PDF",
+
+    "columns": {
+      "budget": "Budżet",
+      "category": "Kategoria",
+      "amount": "Kwota",
+      "description": "Opis",
+      "date": "Data",
+      "actions": "Akcje"
+    },
+
+    "actions": {
+      "delete": "Usuń wydatek"
+    },
+
+    "dialog": {
+      "title": "Nowy wydatek"
+    },
+
+    "form": {
+      "budget": "Budżet",
+      "selectBudget": "Wybierz budżet",
+      "category": "Kategoria",
+      "categoryPlaceholder": "np. Jedzenie",
+      "amount": "Kwota",
+      "description": "Opis",
+      "descriptionPlaceholder": "np. Zakupy w Lidlu",
+      "date": "Data"
+    },
+
+    "achievement": {
+      "unlocked": "🏆 Osiągnięcie odblokowane!",
+      "default": "Nowe osiągnięcie"
+    }
+  },
+  "forgot": {
+    "title": "Resetuj hasło",
+    "subtitle": "Podaj swój e-mail, aby otrzymać link do zmiany hasła.",
+    "email": "E-mail",
+    "emailPlaceholder": "you@example.com",
+    "send": "Wyślij link resetujący",
+    "back": "Wróć do logowania",
+
+    "validation": {
+      "email": "Podaj adres e-mail."
+    }
+  },
+  "login": {
+    "subtitle": "Witaj ponownie w swoim budżecie!",
+    "email": "E-mail",
+    "emailPlaceholder": "you@example.com",
+    "password": "Hasło",
+    "submit": "Zaloguj się",
+    "forgot": "Nie pamiętasz hasła?",
+    "register": "Nie masz konta? Zarejestruj się",
+
+    "validation": {
+      "required": "Podaj e-mail i hasło.",
+      "invalid": "Nieprawidłowy e-mail lub hasło."
+    },
+
+    "success": "Zalogowano jako {username}."
+    },
+    "register": {
+    "title": "Utwórz konto",
+    "subtitlePrefix": "Dołącz do ",
+    "subtitleSuffix": " i zacznij zarządzać swoimi finansami!",
+    "username": "Nazwa użytkownika",
+    "usernamePlaceholder": "Twoja nazwa",
+    "email": "E-mail",
+    "emailPlaceholder": "you@example.com",
+    "password": "Hasło",
+    "password2": "Powtórz hasło",
+    "submit": "Zarejestruj się",
+    "haveAccount": "Masz już konto? Zaloguj się",
+
+    "validation": {
+      "required": "Podaj nazwę użytkownika, e-mail i hasło.",
+      "passwordMin": "Hasło musi mieć co najmniej 6 znaków.",
+      "passwordMismatch": "Hasła różnią się.",
+      "failed": "Rejestracja nie powiodła się."
+    },
+
+    "success": "Konto {username} utworzone! Możesz przejść do logowania.",
+    "error": "Błąd połączenia z API."
+  },
+  "reset": {
+    "title": "Ustaw nowe hasło",
+    "subtitle": "Wprowadź nowe hasło, aby odzyskać dostęp do konta.",
+    "password": "Nowe hasło",
+    "password2": "Powtórz hasło",
+    "submit": "Zmień hasło",
+
+    "validation": {
+      "required": "Uzupełnij oba pola.",
+      "mismatch": "Hasła różnią się.",
+      "minLength": "Hasło musi mieć co najmniej 6 znaków.",
+      "noToken": "Brak tokenu resetującego."
+    },
+
+    "success": "Hasło zostało zmienione. Możesz się zalogować.",
+    "error": "Błąd połączenia z API."
+  },
+  "savings": {
+    "back": "Wróć",
+    "details": {
+      "title": "Szczegóły celu"
+    },
+    "target": "Cel",
+    "saved": "Uzbierano",
+    "status": "Status",
+    "deadline": "Deadline",
+
+    "statuses": {
+      "in_progress": "W realizacji",
+      "completed": "Zakończony",
+      "canceled": "Przerwany",
+      "failed": "Nieudany"
+    },
+
+    "completedMessage": "Gratulacje! Osiągnąłeś swój cel oszczędnościowy.",
+    "addPayment": "Dodaj wpłatę",
+    "cannotAdd": "Ten cel jest już ukończony — nie można dodać kolejnych wpłat :)",
+    "history": "Historia wpłat",
+    "noPayments": "Brak wpłat.",
+
+    "chart": {
+      "count": "Liczba wpłat",
+      "sum": "Suma"
+    },
+
+    
+    "errors": {
+    "addPayment": "Nie udało się dodać wpłaty.",
+    "saveEdit": "Nie udało się zapisać zmian.",
+    "deletePayment": "Nie udało się usunąć wpłaty.",
+    "deleteGoal": "Nie udało się usunąć celu."
+  },
+  "confirmDelete": "Czy na pewno chcesz usunąć ten cel?",
+  "title": "Twoje cele oszczędnościowe",
+  "new": "Nowy cel",
+  "empty": "Brak celów oszczędnościowych. Dodaj pierwszy cel!",
+
+  "filters": {
+    "all": "Wszystkie",
+    "in_progress": "W realizacji",
+    "completed": "Zakończone",
+    "canceled": "Anulowane",
+    "failed": "Nieudane"
+  },
+
+  "details": "Szczegóły",
+
+  "form": {
+    "new": "Nowy cel",
+    "name": "Nazwa celu",
+    "target": "Kwota docelowa",
+    "deadline": "Termin"
+  },
+
+  "validation": {
+    "name": "Podaj nazwę celu",
+    "target": "Podaj poprawną kwotę docelową",
+    "deadline": "Wybierz termin",
+    "amount": "Podaj poprawną kwotę"
+  },
+
+  "createError": "Błąd podczas tworzenia celu"
+  }
+}
+
+

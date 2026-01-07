@@ -7,32 +7,32 @@
       <!-- Menu -->
       <nav class="flex-1 space-y-1">
         <RouterLink to="/dashboard" class="menu-link">
-          <i class="pi pi-home mr-3"></i> Dashboard
+          <i class="pi pi-home mr-3"></i> {{ t('menu.dashboard') }}
         </RouterLink>
 
         <RouterLink to="/budgets" class="menu-link">
-          <i class="pi pi-wallet mr-3"></i> Budżety
+          <i class="pi pi-wallet mr-3"></i> {{ t('menu.budgets') }}
         </RouterLink>
 
         <RouterLink to="/expenses" class="menu-link">
-          <i class="pi pi-list mr-3"></i> Wydatki
+          <i class="pi pi-list mr-3"></i> {{ t('menu.expenses') }}
         </RouterLink>
 
         <RouterLink to="/savings" class="menu-link">
-          <i class="pi pi-money-bill mr-3"></i> Oszczędności
+          <i class="pi pi-money-bill mr-3"></i> {{ t('menu.savings') }}
         </RouterLink>
 
 
         <RouterLink to="/stats" class="menu-link">
-          <i class="pi pi-chart-line mr-3"></i> Statystyki
+          <i class="pi pi-chart-line mr-3"></i> {{ t('menu.stats') }}
         </RouterLink>
 
         <RouterLink to="/achievements" class="menu-link">
-          <i class="pi pi-trophy mr-3"></i> Osiągnięcia
+          <i class="pi pi-trophy mr-3"></i> {{ t('menu.achievements') }}
         </RouterLink>
 
         <RouterLink to="/settings" class="menu-link">
-          <i class="pi pi-cog mr-3"></i> Ustawienia
+          <i class="pi pi-cog mr-3"></i> {{ t('menu.settings') }}
         </RouterLink>
       </nav>
       <div class="mt-4 flex justify-center">
@@ -64,8 +64,10 @@
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import { useSettingsStore } from '@/stores/settings'
+import {useI18n} from "vue-i18n"
 
 const settings = useSettingsStore()
+const { t } = useI18n()
 
 const router = useRouter()
 const logout = () => {
