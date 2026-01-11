@@ -1,10 +1,19 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300 flex">
+  <div class="min-h-screen flex bg-[var(--bg-main)] text-[var(--text-main)]">
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-white/70 backdrop-blur-lg shadow-xl flex flex-col p-4">
-      <div class="font-bold text-xl text-gray-800 mt-2 mb-4">BudgetLife</div>
+    <aside
+      class="relative z-20
+             w-64
+             bg-[var(--bg-card)]
+             border-r border-black/5 dark:border-white/10
+             flex flex-col p-4"
+    >
+      <!-- LOGO -->
+      <h1 class="text-xl font-bold text-[var(--brand-color)] mb-6">
+        BudgetLife
+      </h1>
 
-      <!-- Menu -->
+      <!-- MENU -->
       <nav class="flex-1 space-y-1">
         <RouterLink to="/dashboard" class="menu-link">
           <i class="pi pi-home mr-3"></i> {{ t('menu.dashboard') }}
@@ -22,7 +31,6 @@
           <i class="pi pi-money-bill mr-3"></i> {{ t('menu.savings') }}
         </RouterLink>
 
-
         <RouterLink to="/stats" class="menu-link">
           <i class="pi pi-chart-line mr-3"></i> {{ t('menu.stats') }}
         </RouterLink>
@@ -35,36 +43,42 @@
           <i class="pi pi-cog mr-3"></i> {{ t('menu.settings') }}
         </RouterLink>
       </nav>
-      <div class="mt-4 flex justify-center">
+
+      <!-- FOOTER -->
+      <div class="space-y-3 mt-4">
+        <!-- THEME TOGGLE -->
         <Button
-          :icon="settings.theme === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
-          class="p-button-rounded p-button-text"
-          @click="settings.setTheme(
-            settings.theme === 'dark' ? 'light' : 'dark'
-          )"
+          type="button"
+          @click="settings.toggleTheme"
+          class="w-full flex justify-center"
+        >
+          <span v-if="settings.theme === 'dark'">🌙 Dark mode</span>
+          <span v-else>☀️ Light mode</span>
+        </Button>
+
+        <!-- LOGOUT -->
+        <Button
+          label="Wyloguj"
+          icon="pi pi-sign-out"
+          class="p-button-danger w-full"
+          @click="logout"
         />
       </div>
-
-      <Button label="Wyloguj" icon="pi pi-sign-out" class="p-button-danger mt-auto" @click="logout" />
     </aside>
 
-    <!-- GŁÓWNA ZAWARTOŚĆ -->
+    <!-- CONTENT -->
     <main class="flex-1 p-6 overflow-y-auto">
-
-      <div class="max-w-[1700px] mx-auto min-h-[calc(100vh-4rem)]">
-
-
-        <router-view />
-      </div>
-</main>
+      <router-view />
+    </main>
   </div>
 </template>
+
 
 <script setup>
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import { useSettingsStore } from '@/stores/settings'
-import {useI18n} from "vue-i18n"
+import { useI18n } from 'vue-i18n'
 
 const settings = useSettingsStore()
 const { t } = useI18n()
@@ -81,15 +95,15 @@ const logout = () => {
   display: block;
   padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
-  color: #374151;
+  color: var(--nav-link);
   font-weight: 500;
   transition: background 0.2s;
 }
 .menu-link:hover {
-  background: #d1fae5;
+  background: var(--nav-hover);
 }
 .router-link-active {
-  background: #a7f3d0;
+  background: var(--nav-active);
   font-weight: 600;
 }
 </style>

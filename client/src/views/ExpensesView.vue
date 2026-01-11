@@ -1,21 +1,52 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300 p-6">
-    <div class="bg-white/90 backdrop-blur-lg shadow-xl rounded-2xl p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">🧾 {{ t('expenses.title') }}</h1>
-        <div class="flex gap-3">
-          <Button :label="'➕' + t('expenses.add')" class="p-button-success" @click="showDialog = true" />
-          <Button :label="'📊' + t('expenses.exportExcel')" class="p-button-outlined" @click="exportXLS"/>
-          <Button :label="'📊' + t('expenses.add')" class="p-button-outlined" @click="exportPDF"/>
-        </div>  
-      </div>
+  <div class="view-wrapper space-y-6">
 
-      <DataTable :value="expenses" stripedRows responsiveLayout="scroll">
+    <!-- HEADER -->
+    <div class="app-card p-6 flex justify-between items-center">
+      <h1 class="text-3xl font-bold">
+        🧾 {{ t('expenses.title') }}
+      </h1>
+
+      <div class="flex gap-3">
+        <Button
+          :label="'➕ ' + t('expenses.add')"
+          class="p-button-success"
+          @click="showDialog = true"
+        />
+        <Button
+          :label="'📊 ' + t('expenses.exportExcel')"
+          class="p-button-outlined"
+          @click="exportXLS"
+        />
+        <Button
+          :label="'📄 ' + t('expenses.exportPdf')"
+          class="p-button-outlined"
+          @click="exportPDF"
+        />
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="app-card p-6">
+      <DataTable
+        :value="expenses"
+        stripedRows
+        responsiveLayout="scroll"
+      >
         <Column field="budget_name" :header="t('expenses.columns.budget')" />
         <Column field="category" :header="t('expenses.columns.category')" />
-        <Column field="amount" :header="t('expenses.columns.amount')" />
+        <Column field="amount" :header="t('expenses.columns.amount')" >
+          <template #body="slotProps">
+            {{ formatCurrency(slotProps.data.amount) }}
+          </template>
+        </Column>
         <Column field="description" :header="t('expenses.columns.description')" />
-        <Column field="date" :header="t('expenses.columns.date')" />
+        <Column field="date" :header="t('expenses.columns.date')" >
+            <template #body="slotProps">
+              {{ formatDateOnly(slotProps.data.date) }}
+            </template>
+          </Column>
+
         <Column :header="t('expenses.columns.actions')">
           <template #body="slotProps">
             <Button
@@ -29,12 +60,19 @@
       </DataTable>
     </div>
 
-    <!-- DIALOG DODAWANIA WYDATKU -->
-    <Dialog v-model:visible="showDialog" :header="t('expenses.dialog.title')" modal class="w-[90vw] md:w-[30rem]">
+    <!-- DIALOG: ADD EXPENSE -->
+    <Dialog
+      v-model:visible="showDialog"
+      :header="t('expenses.dialog.title')"
+      modal
+      class="w-[90vw] md:w-[30rem]"
+    >
       <div class="flex flex-col gap-3">
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('expenses.form.budget') }}</label>
+          <label class="block text-sm font-medium mb-1">
+            {{ t('expenses.form.budget') }}
+          </label>
           <Dropdown
             v-model="form.budget_id"
             :options="budgets"
@@ -46,32 +84,68 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('expenses.form.category') }}</label>
-          <InputText v-model="form.category" class="w-full" :placeholder=" t('expenses.form.categoryPlaceholder') " />
+          <label class="block text-sm font-medium mb-1">
+            {{ t('expenses.form.category') }}
+          </label>
+          <InputText
+            v-model="form.category"
+            class="w-full"
+            :placeholder="t('expenses.form.categoryPlaceholder')"
+          />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('expenses.form.amount') }}</label>
-          <InputNumber v-model="form.amount" mode="currency" currency="PLN" locale="pl-PL" class="w-full" />
+          <label class="block text-sm font-medium mb-1">
+            {{ t('expenses.form.amount') }}
+          </label>
+          <InputNumber
+            v-model="form.amount"
+            mode="currency"
+            :currency="settings.currency"
+            :locale="settings.language === 'pl' ? 'pl-PL' : 'en-US'"
+            class="w-full"
+          />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('expenses.form.description') }}</label>
-          <InputText v-model="form.description" class="w-full" :placeholder="t('expenses.form.descriptionPlaceholder')" />
+          <label class="block text-sm font-medium mb-1">
+            {{ t('expenses.form.description') }}
+          </label>
+          <InputText
+            v-model="form.description"
+            class="w-full"
+            :placeholder="t('expenses.form.descriptionPlaceholder')"
+          />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('expenses.form.date') }}</label>
-          <Calendar v-model="form.date" showIcon dateFormat="yy-mm-dd" class="w-full" />
+          <label class="block text-sm font-medium mb-1">
+            {{ t('expenses.form.date') }}
+          </label>
+          <Calendar
+            v-model="form.date"
+            showIcon
+            dateFormat="yy-mm-dd"
+            class="w-full"
+          />
         </div>
 
         <div class="flex justify-end gap-2 mt-3">
-          <Button :label=" t('common.cancel')" class="p-button-text" @click="showDialog = false" />
-          <Button :label="t('common.save')" class="p-button-success" @click="addExpense" />
+          <Button
+            :label="t('common.cancel')"
+            class="p-button-text"
+            @click="showDialog = false"
+          />
+          <Button
+            :label="t('common.save')"
+            class="p-button-success"
+            @click="addExpense"
+          />
         </div>
 
       </div>
     </Dialog>
+
   </div>
 </template>
 
@@ -87,6 +161,8 @@ import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
+import { useSettingsStore } from '@/stores/settings'
+
 
 const API = 'http://localhost:5000/api'
 
@@ -95,6 +171,8 @@ const budgets = ref([])
 const showDialog = ref(false)
 const toast = useToast()
 const { t } = useI18n()
+const settings = useSettingsStore()
+
 
 const form = ref({
   budget_id: null,
@@ -114,44 +192,42 @@ async function exportXLS() {
     const res = await fetch(`${API}/expenses/export/xls`, {
       headers: authHeader()
     })
-
-    if (!res.ok) throw new Error('Błąd eksportu')
+    if (!res.ok) throw new Error('Export error')
 
     const blob = await res.blob()
-    const url = window.URL.createObjectURL(blob)
-
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = 'wydatki.xlsx'
-    document.body.appendChild(a)
     a.click()
-
-    a.remove()
-    window.URL.revokeObjectURL(url)
+    URL.revokeObjectURL(url)
   } catch (err) {
     console.error(err)
     alert('Nie udało się wyeksportować danych')
   }
 }
+
+function formatDateOnly(value) {
+  const d = new Date(value)
+  d.setHours(d.getHours() + 1) // ⚠️ DST warning
+  return d.toISOString().slice(0, 10)
+}
+
+
 async function exportPDF() {
   try {
     const res = await fetch(`${API}/expenses/export/pdf`, {
       headers: authHeader()
     })
-
-    if (!res.ok) throw new Error('Błąd eksportu PDF')
+    if (!res.ok) throw new Error('Export PDF error')
 
     const blob = await res.blob()
-    const url = window.URL.createObjectURL(blob)
-
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = 'wydatki.pdf'
-    document.body.appendChild(a)
     a.click()
-
-    a.remove()
-    window.URL.revokeObjectURL(url)
+    URL.revokeObjectURL(url)
   } catch (err) {
     console.error(err)
     alert('Nie udało się wyeksportować PDF')
@@ -159,43 +235,27 @@ async function exportPDF() {
 }
 
 async function loadExpenses() {
-  try {
-    const res = await fetch(`${API}/expenses`, { headers: authHeader() })
-    if (!res.ok) throw new Error('Błąd podczas pobierania wydatków')
-    expenses.value = await res.json()
-  } catch (err) {
-    console.error(err)
-  }
+  const res = await fetch(`${API}/expenses`, { headers: authHeader() })
+  expenses.value = await res.json()
 }
 
 async function loadBudgets() {
-  try {
-    const res = await fetch(`${API}/budgets`, { headers: authHeader() })
-    if (!res.ok) throw new Error('Błąd podczas pobierania budżetów')
-    const data = await res.json()
-    budgets.value = data.map(b => ({ ...b, id: Number(b.id) }))
-  } catch (err) {
-    console.error(err)
-  }
+  const res = await fetch(`${API}/budgets`, { headers: authHeader() })
+  const data = await res.json()
+  budgets.value = data.map(b => ({ ...b, id: Number(b.id) }))
 }
 
-
 async function addExpense() {
-  if (!form.value.budget_id)
-    return alert('Wybierz budżet')
-  if (!form.value.category)
-    return alert('Wybierz lub wpisz kategorię')
-  if (!form.value.amount || form.value.amount <= 0)
-    return alert('Podaj poprawną kwotę')
-  if (!form.value.date)
-    return alert('Wybierz datę wydatku')
+  if (!form.value.budget_id) return alert('Wybierz budżet')
+  if (!form.value.category) return alert('Wpisz kategorię')
+  if (!form.value.amount || form.value.amount <= 0) return alert('Podaj poprawną kwotę')
+  if (!form.value.date) return alert('Wybierz datę')
 
-  const cleanAmount = Number(form.value.amount)
   const payload = {
     ...form.value,
     budget_id: Number(form.value.budget_id),
-    amount: cleanAmount,
-    date: new Date(form.value.date).toISOString()
+    amount: Number(form.value.amount),
+    date: form.value.date
   }
 
   const res = await fetch(`${API}/expenses`, {
@@ -208,34 +268,45 @@ async function addExpense() {
     const err = await res.json().catch(() => ({}))
     return alert(err.error || 'Nie udało się dodać wydatku')
   }
+
   const data = await res.json()
   if (data.achievementUnlocked) {
-  toast.add({
-    severity: 'success',
-    summary: t('expenses.achievement.unlocked'),
-    detail: data.achievementName ?? t('expenses.achievement.default'),
-    life: 4000
-  })
-}
-
+    toast.add({
+      severity: 'success',
+      summary: t('expenses.achievement.unlocked'),
+      detail: data.achievementName ?? t('expenses.achievement.default'),
+      life: 4000
+    })
+  }
 
   showDialog.value = false
   form.value = { budget_id: null, category: '', amount: null, description: '', date: '' }
   await loadExpenses()
-  await checkForNewAchievements()
 }
 
 async function deleteExpense(id) {
-  try {
-    await fetch(`${API}/expenses/${id}`, {
-      method: 'DELETE',
-      headers: authHeader()
-    })
-    await loadExpenses()
-  } catch (err) {
-    console.error(err)
-  }
+  await fetch(`${API}/expenses/${id}`, {
+    method: 'DELETE',
+    headers: authHeader()
+  })
+  await loadExpenses()
 }
+
+function formatCurrency(value) {
+  if (value == null) return '—'
+
+  const converted = settings.convertFromPLN(value)
+
+  return new Intl.NumberFormat(
+    settings.language === 'pl' ? 'pl-PL' : 'en-US',
+    {
+      style: 'currency',
+      currency: settings.currency
+    }
+  ).format(converted)
+}
+
+
 
 onMounted(async () => {
   await loadBudgets()

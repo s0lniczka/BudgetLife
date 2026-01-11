@@ -1,113 +1,200 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300">
-    <main class="flex-1 p-4 md:p-6">
+  <div class="view-wrapper space-y-8">
 
-      <div class="w-full min-h-[calc(100vh-2rem)] bg-white/85 backdrop-blur-lg shadow-2xl rounded-2xl p-6 md:p-8">
+    <!-- HEADER -->
+    <div class="app-card p-6">
+      <h1 class="text-3xl font-extrabold">
+        <span class="mr-2">👋</span>
+        {{ t('dashboard.welcome') }},
+        <span class="text-emerald-500">{{ user?.username }}</span>!
+      </h1>
 
-        <!-- HEADER -->
-        <div class="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
-          <div>
-            <h1 class="text-3xl font-extrabold text-gray-900">
-              <span class="mr-2">👋</span>{{ t('dashboard.welcome') }},
-              <span class="text-emerald-600">{{ user?.username }}</span>!
-            </h1>
-            <p class="text-gray-600 mt-1">
-              {{ t('dashboard.email') }}: <span class="font-medium text-gray-800">{{ user?.email }}</span>
-              <span class="mx-2">|</span>
-              {{ t('dashboard.currency') }}: <span class="font-medium">{{ user?.currency }}</span>
-            </p>
+      <p class="opacity-70 mt-1">
+        {{ t('dashboard.email') }}:
+        <span class="font-medium">{{ user?.email }}</span>
+        <span class="mx-2">|</span>
+        {{ t('dashboard.currency') }}:
+        <span class="font-medium">{{ settings.currency }}</span>
+      </p>
+    </div>
+
+    <!-- TOP GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- METRICS -->
+      <div class="lg:col-span-2 grid sm:grid-cols-3 gap-6">
+        <div class="app-card p-5 space-y-2">
+          <div class="font-semibold flex items-center gap-2">
+            🪙 {{ t('dashboard.balance') }}
+          </div>
+          <div class="text-2xl font-bold text-emerald-500">
+            {{ formatCurrency(balance) }}
           </div>
         </div>
 
-        <!-- TOP GRID -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        <div class="app-card p-5 space-y-1">
+  <div class="font-semibold flex items-center gap-2">
+    📚 {{ t('dashboard.activeBudgets') }}
+  </div>
 
-          <!-- LEFT SUMMARY -->
-          <div class="order-2 lg:order-1 lg:col-span-2 grid sm:grid-cols-3 gap-6">
-            <div class="rounded-xl bg-gray-900 text-white p-5">
-              <div class="font-semibold flex items-center gap-2"><span>🪙</span> {{ t('dashboard.balance') }}</div>
-              <div class="text-2xl font-bold text-emerald-400 mt-2">{{ formatCurrency(balance) }}</div>
-            </div>
+  <div class="text-2xl font-bold text-sky-500">
+    {{ budgetsCount }}
+  </div>
 
-            <div class="rounded-xl bg-gray-900 text-white p-5">
-              <div class="font-semibold flex items-center gap-2"><span>📚</span> {{ t('dashboard.activeBudgets') }}</div>
-              <div class="text-2xl font-bold text-sky-400 mt-2">{{ budgetsCount }}</div>
-            </div>
+  <div class="text-sm opacity-70">
+    {{ nearestBudget }}
+  </div>
+</div>
 
-            <div class="rounded-xl bg-gray-900 text-white p-5">
-              <div class="font-semibold flex items-center gap-2"><span>🧾</span> {{ t('dashboard.monthExpenses') }}</div>
-              <div class="text-2xl font-bold text-indigo-400 mt-2">{{ expensesCount }}</div>
-            </div>
+
+        <div class="app-card p-5 space-y-2">
+          <div class="font-semibold flex items-center gap-2">
+            🧾 {{ t('dashboard.monthExpenses') }}
           </div>
-
-          <!-- RIGHT CHART -->
-          <div class="order-1 lg:order-2">
-            <div class="rounded-xl bg-white border border-black/5 shadow p-4 relative">
-
-              <div class="flex justify-between items-center mb-2">
-                <h2 class="text-lg font-semibold text-gray-800">📊 {{ t('dashboard.expensesStructure') }}</h2>
-
-                <Dropdown
-                  v-model="selectedBudget"
-                  :options="budgets"
-                  optionLabel="name"
-                  optionValue="id"
-                  :placeholder="t('dashboard.selectBudget') "
-                  class="w-56"
-                  showClear
-                />
-              </div>
-
-              <!-- LOCAL CHART LOADER -->
-              <div class="relative h-64">
-                <Chart
-                  ref="chartRef"
-                  :data="doughnutData"
-                  :options="doughnutOptions"
-                  type="doughnut"
-                  class="w-full h-full"
-                />
-
-                <div
-                  v-if="loadingChart"
-                  class="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-lg"
-                >
-                  <i class="pi pi-spin pi-spinner text-3xl text-emerald-600"></i>
-                </div>
-              </div>
-
-            </div>
+          <div class="text-2xl font-bold text-indigo-500">
+            {{ expensesCount }}
           </div>
-
+          
         </div>
-
-        <!-- RECENT TRANSACTIONS -->
-        <div class="mt-8 bg-white rounded-xl p-4 shadow-inner">
-          <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('dashboard.recentTransactions') }}</h2>
-
-          <div v-if="loadingTransactions" class="text-gray-500">{{ t('dashboard.loading') }}</div>
-
-          <div v-else>
-            <!-- DataTable ALWAYS mounted = zero flicker -->
-            <DataTable
-              :value="transactions"
-              stripedRows
-              responsiveLayout="scroll"
-            >
-              <Column field="date" :header=" t('dashboard.table.date') " />
-              <Column field="category" :header="t('dashboard.table.category')" />
-              <Column field="amount" :header="t('dashboard.table.amount')" />
-            </DataTable>
-
-            <div v-if="transactions.length === 0" class="text-gray-500 mt-2">
-              t('dashboard.table.date')
-            </div>
-          </div>
-
-        </div>
-
       </div>
-    </main>
+
+      <!-- CHART -->
+      <div class="app-card p-4 relative">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-lg font-semibold">
+            📊 {{ t('dashboard.expensesStructure') }}
+          </h2>
+
+          <Dropdown
+            v-model="selectedBudget"
+            :options="budgets"
+            optionLabel="name"
+            optionValue="id"
+            :placeholder="t('dashboard.selectBudget')"
+            class="w-56 bg-[var(--bg-card)] text-[var(--text-main)]"
+            showClear
+          />
+        </div>
+
+        <div class="relative h-64">
+          <Chart
+            ref="chartRef"
+            :data="doughnutData"
+            :options="doughnutOptions"
+            type="doughnut"
+            class="w-full h-full"
+          />
+          <div class="text-center text-sm opacity-70 mt-3">
+  {{ t('dashboard.totalExpenses') }}:
+  <strong>
+    {{ formatCurrency(
+      doughnutData.datasets[0].data.reduce((a,b)=>a+b,0)
+    ) }}
+  </strong>
+</div>
+
+
+          <div
+            v-if="loadingChart"
+            class="absolute inset-0 flex items-center justify-center
+                   bg-black/5 dark:bg-black/30
+                   backdrop-blur-sm rounded-lg"
+          >
+            <i class="pi pi-spin pi-spinner text-3xl text-emerald-500"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECENT TRANSACTIONS -->
+    <div class="app-card p-6">
+      <h2 class="text-xl font-semibold mb-4">
+        {{ t('dashboard.recentTransactions') }}
+      </h2>
+
+      <div v-if="loadingTransactions" class="opacity-60">
+        {{ t('dashboard.loading') }}
+      </div>
+
+      <DataTable
+        v-else
+        :value="transactions"
+        stripedRows
+        responsiveLayout="scroll"
+      >
+        <Column field="date" :header="t('dashboard.table.date')" >
+          <template #body="slotProps">
+            {{ formatDate(slotProps.data.date) }}
+          </template>
+        </Column>
+        <Column :header="t('dashboard.table.category')">
+          <template #body="slotProps">
+            <div>
+              <div class="font-medium">
+                {{ slotProps.data.category }}
+              </div>
+            </div>
+          </template>
+        </Column>
+
+        <Column :header="t('dashboard.table.amount')" class="text-right">
+  <template #body="slotProps">
+    <span
+      class="font-semibold"
+      :class="slotProps.data.amount >= 0
+        ? 'text-emerald-500'
+        : 'text-red-500'"
+    >
+      {{ formatCurrency(slotProps.data.amount) }}
+    </span>
+  </template>
+</Column>
+
+      </DataTable>
+
+      <div
+        v-if="!loadingTransactions && transactions.length === 0"
+        class="opacity-60 mt-2"
+      >
+        {{ t('dashboard.noData') }}
+      </div>
+    </div>
+    <div
+  class="app-card p-6 flex flex-col md:flex-row
+         md:items-center md:justify-between gap-4"
+>
+  <!-- LEWA STRONA -->
+  <div>
+    <h3 class="font-semibold text-lg flex items-center gap-2">
+      🚀 Co dalej?
+    </h3>
+    <p class="text-sm opacity-70">
+      Dodaj nowy wydatek albo sprawdź statystyki i trendy
+    </p>
+  </div>
+
+  <!-- PRAWA STRONA: CTA -->
+  <div class="flex gap-3">
+    <Button
+      severity="success"
+      class="px-4 py-2 font-semibold"
+      @click="$router.push('/expenses')"
+    >
+      ➕ Dodaj wydatek
+    </Button>
+
+    <Button
+      outlined
+      severity="secondary"
+      class="px-4 py-2"
+      @click="$router.push('/stats')"
+    >
+      📊 Zobacz statystyki
+    </Button>
+  </div>
+</div>
+
+
   </div>
 </template>
 
@@ -117,16 +204,19 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Chart from 'primevue/chart'
 import Dropdown from 'primevue/dropdown'
-import {useI18n} from "vue-i18n"
+import { useI18n } from 'vue-i18n'
+import { useSettingsStore } from '@/stores/settings'
 
 const API = 'http://localhost:5000/api'
+const { t } = useI18n()
+const settings = useSettingsStore()
 
 /* STATE */
 const user = ref(null)
 const budgets = ref([])
 const selectedBudget = ref(null)
-const {t} = useI18n()
 
+const monthExpensesSum = ref(0)
 const balance = ref(0)
 const budgetsCount = ref(0)
 const expensesCount = ref(0)
@@ -135,15 +225,22 @@ const transactions = ref([])
 const loadingTransactions = ref(true)
 const loadingChart = ref(false)
 
-/* CHART FIX */
-const chartRef = ref(null)  // ⭐ ważne
+/* CHART */
+const chartRef = ref(null)
+const isDark = () => document.documentElement.classList.contains('dark')
 
 const doughnutData = ref({
   labels: [],
   datasets: [
     {
       data: [],
-      backgroundColor: ['#10b981', '#60a5fa', '#f59e0b', '#ef4444', '#8b5cf6'],
+      backgroundColor: [
+        '#10b981',
+        '#60a5fa',
+        '#f59e0b',
+        '#ef4444',
+        '#8b5cf6'
+      ],
       borderWidth: 0
     }
   ]
@@ -151,10 +248,22 @@ const doughnutData = ref({
 
 const doughnutOptions = ref({
   plugins: {
-    legend: { position: 'bottom', labels: { color: '#111827' } },
+    legend: {
+      position: 'bottom',
+      labels: {
+        color: isDark() ? '#e5e7eb' : '#111827',
+        font: { size: 12, weight: '500' }
+      }
+    },
     tooltip: {
+      titleColor: isDark() ? '#e5e7eb' : '#111827',
+      bodyColor: isDark() ? '#e5e7eb' : '#111827',
+      backgroundColor: isDark() ? '#020617' : '#ffffff',
+      borderColor: isDark() ? '#334155' : '#e5e7eb',
+      borderWidth: 1,
       callbacks: {
-        label: (ctx) => ` ${ctx.label}: ${formatCurrency(ctx.raw ?? 0)}`
+        label: (ctx) =>
+          ` ${ctx.label}: ${formatCurrency(ctx.raw ?? 0)}`
       }
     }
   },
@@ -167,10 +276,21 @@ function authHeader() {
 }
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(value)
+  if (value == null) return '—'
+
+  const converted = settings.convertFromPLN(value)
+
+  return new Intl.NumberFormat(
+    settings.language === 'pl' ? 'pl-PL' : 'en-US',
+    {
+      style: 'currency',
+      currency: settings.currency
+    }
+  ).format(converted)
 }
 
-/* INITIAL LOAD */
+
+/* LOADERS */
 onMounted(async () => {
   await loadBudgets()
   await loadSummary()
@@ -181,7 +301,6 @@ onMounted(async () => {
   }
 })
 
-/* LOAD STATIC SUMMARY ONCE */
 async function loadSummary() {
   const u = await fetch(`${API}/user/me`, { headers: authHeader() })
   user.value = await u.json()
@@ -193,74 +312,98 @@ async function loadSummary() {
   const e = await fetch(`${API}/expenses`, { headers: authHeader() })
   const allExpenses = await e.json()
   expensesCount.value = allExpenses.length
+  monthExpensesSum.value = allExpenses.reduce(
+  (sum, e) => sum + Number(e.amount || 0),
+  0
+)
 
   balance.value = allBudgets.reduce(
-    (sum, b) => sum + ((b.actual_income || 0) - (b.actual_expenses || 0)),
+    (sum, b) =>
+      sum + ((b.actual_income || 0) - (b.actual_expenses || 0)),
     0
   )
 }
 
-/* LOAD BUDGETS */
 async function loadBudgets() {
   const res = await fetch(`${API}/budgets`, { headers: authHeader() })
   budgets.value = await res.json()
 
-  if (budgets.value.length > 0 && !selectedBudget.value) {
+  if (budgets.value.length && !selectedBudget.value) {
     selectedBudget.value = budgets.value[0].id
   }
 }
 
-/* LOAD CHART (ZERO FLICKER VERSION) */
 async function loadExpensesByCategory() {
   loadingChart.value = true
 
-  const res = await fetch(`${API}/expenses/categories?budget_id=${selectedBudget.value}`, {
-    headers: authHeader()
-  })
+  const res = await fetch(
+    `${API}/expenses/categories?budget_id=${selectedBudget.value}`,
+    { headers: authHeader() }
+  )
   const data = await res.json()
 
   const chart = chartRef.value?.chart
   if (chart) {
     chart.data.labels = data.map(d => d.category)
     chart.data.datasets[0].data = data.map(d => d.total)
-    chart.update()   // ⭐ najważniejsze – bez resetu canvas
+    chart.update()
   }
 
   loadingChart.value = false
 }
 
-/* LOAD TABLE (ZERO FLICKER VERSION) */
 async function loadRecentExpenses() {
   loadingTransactions.value = true
 
-  const res = await fetch(`${API}/expenses/recent?budget_id=${selectedBudget.value}`, {
-    headers: authHeader()
-  })
+  const res = await fetch(
+    `${API}/expenses/recent?budget_id=${selectedBudget.value}`,
+    { headers: authHeader() }
+  )
   const newData = await res.json()
 
-  // mutate array = component never unmounts
-  transactions.value.splice(0, transactions.value.length, ...newData)
+  transactions.value.splice(
+    0,
+    transactions.value.length,
+    ...newData
+  )
 
   loadingTransactions.value = false
 }
 
-/* WATCH ONLY CHANGING DATA */
+function formatDate(value) {
+  const d = new Date(value)
+  d.setHours(d.getHours() + 1) // ⚠️ DST warning
+  return d.toISOString().slice(0, 10)
+}
+
+
+/* WATCHERS */
 watch(selectedBudget, async () => {
   if (!selectedBudget.value) return
-
   await loadExpensesByCategory()
   await loadRecentExpenses()
 })
+
+watch(
+  () => document.documentElement.classList.contains('dark'),
+  () => {
+    const chart = chartRef.value?.chart
+    if (!chart) return
+
+    chart.options.plugins.legend.labels.color =
+      isDark() ? '#e5e7eb' : '#111827'
+
+    chart.options.plugins.tooltip.titleColor =
+      isDark() ? '#e5e7eb' : '#111827'
+    chart.options.plugins.tooltip.bodyColor =
+      isDark() ? '#e5e7eb' : '#111827'
+    chart.options.plugins.tooltip.backgroundColor =
+      isDark() ? '#020617' : '#ffffff'
+    chart.options.plugins.tooltip.borderColor =
+      isDark() ? '#334155' : '#e5e7eb'
+
+    chart.update()
+  }
+)
 </script>
 
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity .25s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

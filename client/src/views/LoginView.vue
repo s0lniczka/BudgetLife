@@ -1,32 +1,52 @@
-<!-- src/views/LoginView.vue -->
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300">
-    <div class="w-full max-w-md bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl p-8">
-      <!-- Logo / Nagłówek -->
-      <div class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Budget<span class="text-emerald-600">Life</span></h1>
-        <p class="text-sm text-gray-500 mt-1">{{ t('login.subtitle') }}</p>
+  <div
+    class="min-h-screen flex items-center justify-center
+           bg-[var(--bg-main)] text-[var(--text-main)]"
+  >
+    <div
+      class="relative w-full max-w-md
+             bg-[var(--bg-card)]
+             backdrop-blur-lg
+             shadow-xl rounded-2xl p-8"
+    >
+      <!-- THEME TOGGLE -->
+      <div class="absolute top-3 right-3">
+        <ThemeToggle />
       </div>
 
-      <!-- Formularz logowania -->
+      <!-- Logo / Nagłówek -->
+      <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold">
+          Budget<span class="text-emerald-500">Life</span>
+        </h1>
+        <p class="text-sm text-[var(--text-main)]/60 mt-1">
+          {{ t('login.subtitle') }}
+        </p>
+      </div>
+
+      <!-- Formularz -->
       <div class="space-y-4">
-        <!-- E-mail -->
+        <!-- Email -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">{{ t('login.email') }}</label>
+          <label class="text-sm font-medium">
+            {{ t('login.email') }}
+          </label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-envelope" />
             <InputText
               v-model="email"
               type="email"
-              :placeholder="t('login.emailPlaceholder') "
+              :placeholder="t('login.emailPlaceholder')"
               class="w-full"
             />
           </span>
         </div>
 
-        <!-- Hasło -->
+        <!-- Password -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">{{ t('login.password') }}</label>
+          <label class="text-sm font-medium">
+            {{ t('login.password') }}
+          </label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-lock" />
             <Password
@@ -39,24 +59,43 @@
           </span>
         </div>
 
-        <!-- Komunikaty -->
-        <InlineMessage v-if="error" severity="error" class="w-full">{{ error }}</InlineMessage>
-        <InlineMessage v-if="ok" severity="success" class="w-full">{{ ok }}</InlineMessage>
+        <!-- Messages -->
+        <InlineMessage
+          v-if="error"
+          severity="error"
+          class="w-full"
+        >
+          {{ error }}
+        </InlineMessage>
 
-        <!-- Przycisk logowania -->
+        <InlineMessage
+          v-if="ok"
+          severity="success"
+          class="w-full"
+        >
+          {{ ok }}
+        </InlineMessage>
+
+        <!-- Submit -->
         <Button
           :label="t('login.submit')"
           :loading="loading"
-          class="w-full bg-emerald-500 border-none hover:bg-emerald-600 transition-all duration-300"
+          class="w-full bg-emerald-500 border-none hover:bg-emerald-600 transition"
           @click="login"
         />
 
-        <!-- Linki -->
-        <div class="text-center text-sm text-gray-600 mt-3 space-y-1">
-          <RouterLink to="/forgot-password" class="hover:text-emerald-600 block">
+        <!-- Links -->
+        <div class="text-center text-sm text-[var(--text-main)]/60 mt-3 space-y-1">
+          <RouterLink
+            to="/forgot-password"
+            class="hover:text-emerald-500 block"
+          >
             {{ t('login.forgot') }}
           </RouterLink>
-          <RouterLink to="/register" class="hover:text-emerald-600 block">
+          <RouterLink
+            to="/register"
+            class="hover:text-emerald-500 block"
+          >
             {{ t('login.register') }}
           </RouterLink>
         </div>
@@ -70,13 +109,21 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
-// PrimeVue komponenty
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
 import InlineMessage from 'primevue/inlinemessage'
 
-defineOptions({ components: { InputText, Password, Button, InlineMessage } })
+import ThemeToggle from '@/components/ThemeToggle.vue'
+
+defineOptions({
+  components: {
+    InputText,
+    Password,
+    Button,
+    InlineMessage
+  }
+})
 
 const email = ref('')
 const password = ref('')
@@ -85,7 +132,6 @@ const error = ref('')
 const ok = ref('')
 
 const { t } = useI18n()
-
 const router = useRouter()
 const API = 'http://localhost:5000/api'
 
@@ -94,41 +140,43 @@ const login = async () => {
   ok.value = ''
 
   if (!email.value || !password.value) {
-    error.value = t('login.validation.required') 
-    return 
+    error.value = t('login.validation.required')
+    return
   }
 
   loading.value = true
   try {
-
     const res = await fetch(`${API}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.value, password: password.value })
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
     })
 
     const data = await res.json()
 
     if (!res.ok) {
-      error.value = data?.error || t('login.validation.invalid') 
+      error.value = data?.error || t('login.validation.invalid')
       return
     }
 
-    // jeśli logowanie się udało — zapisz token
     localStorage.setItem('token', data.token)
-    ok.value = t('login.success',  { username: data.user.username})
+    ok.value = t('login.success', { username: data.user.username })
 
-    // przekierowanie (np. na dashboard)
-    setTimeout(() => router.push('/dashboard'), 1500)
-  } catch (e) {
+    setTimeout(() => router.push('/dashboard'), 1200)
+  } catch {
     error.value = 'Błąd połączenia z API.'
   } finally {
     loading.value = false
   }
 }
 </script>
+
 <style scoped>
 .p-input-icon-left > i {
-  color: #6b7280; /* szary */
+  color: currentColor;
+  opacity: 0.6;
 }
 </style>

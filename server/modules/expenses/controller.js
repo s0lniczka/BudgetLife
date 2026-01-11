@@ -6,9 +6,10 @@ const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 const path = require('path');
 const fs = require('fs');
 
+const toNum = (v) =>
+  v === undefined || v === null || v === '' ? null : Number(v);
 
-const toNum = (v) => (v === undefined || v === null || v === '' ? null : Number(v));
-
+/* ===================== LIST ===================== */
 exports.list = async (req, res, next) => {
   try {
     const { budget_id, from, to } = req.query;
@@ -41,12 +42,12 @@ exports.list = async (req, res, next) => {
 
     const { rows } = await db.query(sql, params);
     res.json(rows);
-
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 };
 
-
-
+/* ===================== GET ONE ===================== */
 exports.getOne = async (req, res, next) => {
   try {
     const id = Number(req.params.id);
@@ -60,31 +61,47 @@ exports.getOne = async (req, res, next) => {
 
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
-
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 };
 
-
-
+/* ===================== CREATE ===================== */
 exports.create = async (req, res, next) => {
   try {
     const { budget_id, category, amount, description, date } = req.body;
     const userId = req.user.id;
 
-    if (!budget_id || !category || amount === undefined)
-      return res.status(400).json({ error: 'budget_id, category, amount są wymagane' });
+    if (!budget_id || !category || amount === undefined || !date) {
+      return res.status(400).json({
+        error: 'budget_id, category, amount, date są wymagane'
+      });
+    }
 
     const owns = await db.query(
       'SELECT 1 FROM budgets WHERE id=$1 AND user_id=$2',
       [Number(budget_id), userId]
     );
-    if (!owns.rowCount) return res.status(404).json({ error: 'Budget not found' });
+    if (!owns.rowCount) {
+      return res.status(404).json({ error: 'Budget not found' });
+    }
 
+    // 🔥 NAJWAŻNIEJSZE:
+    // date = DATA MERYTORYCZNA (YYYY-MM-DD)
+    // created_at = NOW()
     const { rows } = await db.query(
-      `INSERT INTO expenses (user_id, budget_id, category, amount, description, "date")
-       VALUES ($1,$2,$3,$4,$5, COALESCE($6, NOW()))
+      `INSERT INTO expenses
+        (user_id, budget_id, category, amount, description, "date", created_at)
+       VALUES ($1,$2,$3,$4,$5,$6, NOW())
        RETURNING *`,
-      [userId, Number(budget_id), category, toNum(amount), description ?? null, date ?? null]
+      [
+        userId,
+        Number(budget_id),
+        category,
+        toNum(amount),
+        description ?? null,
+        date // ⬅️ STRING YYYY-MM-DD
+      ]
     );
 
     await db.query(
@@ -94,19 +111,21 @@ exports.create = async (req, res, next) => {
       [toNum(amount), Number(budget_id), userId]
     );
 
-    const unlocked = await grantAchievement(userId, 2); // Pierwszy wydatek
+    const unlocked = await grantAchievement(userId, 2);
 
     res.status(201).json({
-      expense:rows[0],
+      expense: rows[0],
       achievementUnlocked: unlocked,
-      achievementName: 'Pierwszy wydatek',
+      achievementName: unlocked ? 'Pierwszy wydatek' : null
     });
-
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 };
 
 
 
+/* ===================== UPDATE ===================== */
 exports.update = async (req, res, next) => {
   try {
     const id = Number(req.params.id);
@@ -127,7 +146,8 @@ exports.update = async (req, res, next) => {
         'SELECT 1 FROM budgets WHERE id=$1 AND user_id=$2',
         [Number(budget_id), userId]
       );
-      if (!owns.rowCount) return res.status(404).json({ error: 'Budget not found' });
+      if (!owns.rowCount)
+        return res.status(404).json({ error: 'Budget not found' });
       newBudgetId = Number(budget_id);
     }
 
@@ -145,19 +165,19 @@ exports.update = async (req, res, next) => {
         category ?? null,
         amount !== undefined ? toNum(amount) : null,
         description ?? null,
-        date ?? null,
+        date ?? null, // tu CELOWO zostawiamy możliwość edycji
         id,
         userId
       ]
     );
 
     res.json(rows[0]);
-
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 };
 
-
-
+/* ===================== REMOVE ===================== */
 exports.remove = async (req, res, next) => {
   const client = await db.connect();
   const userId = req.user.id;
@@ -189,18 +209,15 @@ exports.remove = async (req, res, next) => {
 
     await client.query('COMMIT');
     res.status(204).end();
-
   } catch (e) {
     await client.query('ROLLBACK');
     next(e);
-
   } finally {
     client.release();
   }
 };
 
-
-
+/* ===================== BY CATEGORY ===================== */
 exports.byCategory = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -224,12 +241,12 @@ exports.byCategory = async (req, res, next) => {
     );
 
     res.json(rows);
-
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 };
 
-
-
+/* ===================== RECENT ===================== */
 exports.recent = async (req, res) => {
   const { budget_id } = req.query;
 
@@ -245,11 +262,22 @@ exports.recent = async (req, res) => {
     );
 
     res.json(result.rows);
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+function formatDatePL(date) {
+  if (!date) return '';
+  return new Date(date).toLocaleDateString('pl-PL');
+}
+
+function excelSafeDate(d) {
+  const date = new Date(d);
+  date.setHours(12); // 🔥 południe = zero problemów UTC
+  return date;
+}
+
 
 exports.exportXLS = async (req, res, next) => {
   try {
@@ -296,7 +324,7 @@ exports.exportXLS = async (req, res, next) => {
     // ====== DANE ======
     rows.forEach(r => {
       const row = worksheet.addRow({
-        date: r.date,
+        date: excelSafeDate(r.date),
         budget: r.budget,
         category: r.category,
         amount: Number(r.amount),
@@ -485,7 +513,7 @@ exports.exportPDF = async (req, res, next) => {
         y = doc.y;
       }
 
-      drawCell(r.date.toISOString().slice(0, 10), x, y, col.date, rowH);
+      drawCell(formatDatePL(r.date), x, y, col.date, rowH);
       drawCell(r.budget, x + col.date, y, col.budget, rowH);
       drawCell(r.category, x + col.date + col.budget, y, col.category, rowH);
       drawCell(`${Number(r.amount).toFixed(2)} zł`, x + col.date + col.budget + col.category, y, col.amount, rowH);

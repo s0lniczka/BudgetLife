@@ -75,6 +75,8 @@
     "welcome": "Welcome",
     "email": "Your email",
     "currency": "Currency",
+    "totalExpenses": "Total expenses",
+
 
     "balance": "Balance",
     "activeBudgets": "Active budgets",
@@ -202,7 +204,7 @@
   },
   "savings": {
     "back": "Back",
-    "details": {
+    "detail": {
       "title": "Goal details"
     },
     "target": "Target",
@@ -215,6 +217,9 @@
       "completed": "Completed",
       "canceled": "Canceled",
       "failed": "Failed"
+    },
+    "dialog":{
+        "editGoal": "Edit Goal"
     },
 
     "completedMessage": "Congratulations! You have reached your savings goal.",
@@ -264,6 +269,31 @@
   },
 
   "createError": "Error while creating goal"
+  },
+
+  "stats": {
+    "title": "Statistics",
+    "subtitle": "Overview of your financial activity",
+
+    "totalIncome": "Total income",
+    "totalExpenses": "Total expenses",
+    "totalSaved": "Total saved",
+    "achievements": "Achievements",
+
+    "history": "Event history",
+    "noHistory": "No events to display",
+
+    "filters": {
+      "type": "Event type"
+    },
+
+    "types": {
+      "income": "Income",
+      "expense": "Expense",
+      "saving": "Saving",
+      "achievement": "Achievement",
+      "budget": "Budget"
+    }
   }
 }
 

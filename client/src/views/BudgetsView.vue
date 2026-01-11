@@ -1,18 +1,48 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300 p-6">
-    <div class="bg-white/90 backdrop-blur-lg shadow-xl rounded-2xl p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">💰 {{ t('budgets.title') }}</h1>
-        <Button :label="'➕' +  t('budgets.new')" class="p-button-success" @click="showDialog = true" />
-      </div>
+  <div class="view-wrapper space-y-6">
 
-      <DataTable :value="budgets" stripedRows responsiveLayout="scroll">
+    <!-- HEADER -->
+    <div class="app-card p-6 flex justify-between items-center">
+      <h1 class="text-3xl font-bold">
+        💰 {{ t('budgets.title') }}
+      </h1>
+
+      <Button
+        :label="'➕ ' + t('budgets.new')"
+        class="p-button-success"
+        @click="showDialog = true"
+      />
+    </div>
+
+    <!-- TABLE -->
+    <div class="app-card p-6">
+      <DataTable
+        :value="budgets"
+        stripedRows
+        responsiveLayout="scroll"
+      >
         <Column field="name" :header="t('budgets.columns.name')" />
         <Column field="month" :header="t('budgets.columns.month')" />
-        <Column field="planned_income" :header="t('budgets.columns.plannedIncome')" />
-        <Column field="planned_expenses" :header="t('budgets.columns.plannedExpenses')" />
-        <Column field="actual_income" :header="t('budgets.columns.actualIncome')" />
-        <Column field="actual_expenses" :header="t('budgets.columns.actualExpenses')" />
+        <Column field="planned_income" :header="t('budgets.columns.plannedIncome')" >
+          <template #body="slotProps">
+            {{ formatCurrency(slotProps.data.planned_income) }}
+          </template>
+        </Column>
+        <Column field="planned_expenses" :header="t('budgets.columns.plannedExpenses')" >
+        <template #body="slotProps">
+            {{ formatCurrency(slotProps.data.planned_expenses) }}
+          </template>
+        </Column>
+        <Column field="actual_income" :header="t('budgets.columns.actualIncome')" >
+        <template #body="slotProps">
+            {{ formatCurrency(slotProps.data.actual_income) }}
+          </template>
+        </Column>
+        <Column field="actual_expenses" :header="t('budgets.columns.actualExpenses')" >
+        <template #body="slotProps">
+            {{ formatCurrency(slotProps.data.actual_expenses) }}
+          </template>
+        </Column>
 
         <Column :header="t('budgets.columns.actions')">
           <template #body="slotProps">
@@ -36,16 +66,24 @@
     </div>
 
     <!-- DIALOG: NOWY BUDŻET -->
-    <Dialog v-model:visible="showDialog" :header="t('budgets.dialogs.new')" modal class="w-[90vw] md:w-[30rem]">
+    <Dialog
+      v-model:visible="showDialog"
+      :header="t('budgets.dialogs.new')"
+      modal
+      class="w-[90vw] md:w-[30rem]"
+    >
       <div class="flex flex-col gap-3">
-        
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{t('budgets.form.name')}}</label>
-          <InputText v-model="form.name" class="w-full" placeholder="np. Dieta, Mieszkanie, Wakacje" />
+          <label class="block text-sm font-medium mb-1">
+            {{ t('budgets.form.name') }}
+          </label>
+          <InputText v-model="form.name" class="w-full" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{t('budgets.form.month')}}</label>
+          <label class="block text-sm font-medium mb-1">
+            {{ t('budgets.form.month') }}
+          </label>
           <Calendar
             v-model="form.month"
             view="month"
@@ -57,33 +95,81 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{t('budgets.form.plannedIncome')}}</label>
-          <InputNumber v-model="form.planned_income" mode="currency" currency="PLN" locale="pl-PL" :min="0" class="w-full" />
+          <label class="block text-sm font-medium mb-1">
+            {{ t('budgets.form.plannedIncome') }}
+          </label>
+          <InputNumber
+            v-model="form.planned_income"
+            mode="currency"
+            currency="PLN"
+            locale="pl-PL"
+            :min="0"
+            class="w-full"
+          />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{t('budgets.form.plannedExpenses')}}</label>
-          <InputNumber v-model="form.planned_expenses" mode="currency" currency="PLN" locale="pl-PL" :min="0" class="w-full" />
+          <label class="block text-sm font-medium mb-1">
+            {{ t('budgets.form.plannedExpenses') }}
+          </label>
+          <InputNumber
+            v-model="form.planned_expenses"
+            mode="currency"
+            currency="PLN"
+            locale="pl-PL"
+            :min="0"
+            class="w-full"
+          />
         </div>
 
         <div class="flex justify-end gap-2 mt-3">
-          <Button :label="t('budgets.dialogs.cancel')" class="p-button-text" @click="showDialog = false" />
-          <Button :label="t('budgets.dialogs.save')" class="p-button-success" @click="addBudget" />
+          <Button
+            :label="t('budgets.dialogs.cancel')"
+            class="p-button-text"
+            @click="showDialog = false"
+          />
+          <Button
+            :label="t('budgets.dialogs.save')"
+            class="p-button-success"
+            @click="addBudget"
+          />
         </div>
       </div>
     </Dialog>
 
     <!-- DIALOG: DODANIE PRZYCHODU -->
-    <Dialog v-model:visible="showIncomeDialog" :header="t('budgets.dialogs.addIncome')" modal class="w-[90vw] md:w-[25rem]">
+    <Dialog
+      v-model:visible="showIncomeDialog"
+      :header="t('budgets.dialogs.addIncome')"
+      modal
+      class="w-[90vw] md:w-[25rem]"
+    >
       <div class="flex flex-col gap-3">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('budgets.form.plannedIncome') }}</label>
-          <InputNumber v-model="incomeForm.amount" mode="currency" currency="PLN" locale="pl-PL" :min="1" class="w-full" />
+          <label class="block text-sm font-medium mb-1">
+            {{ t('budgets.form.plannedIncome') }}
+          </label>
+          <InputNumber
+            v-model="incomeForm.amount"
+            mode="currency"
+            currency="PLN"
+            locale="pl-PL"
+            :min="1"
+            class="w-full"
+          />
         </div>
 
         <div class="flex justify-end gap-2 mt-3">
-          <Button :label="t('budgets.dialogs.cancel')" class="p-button-text" @click="showIncomeDialog = false" />
-          <Button :label="t('budgets.dialogs.save')" class="p-button-success" @click="addIncome" />
+          <Button
+            :label="t('budgets.dialogs.cancel')"
+            class="p-button-text"
+            @click="showIncomeDialog = false"
+          />
+          <Button
+            :label="t('budgets.dialogs.save')"
+            class="p-button-success"
+            @click="addIncome"
+          />
         </div>
       </div>
     </Dialog>
@@ -101,16 +187,17 @@ import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
 import { useToast } from 'primevue/usetoast'
-import {useI18n} from 'vue-i18n'
-
+import { useI18n } from 'vue-i18n'
+import { useSettingsStore } from '@/stores/settings'
 
 const API = 'http://localhost:5000/api'
 
 const budgets = ref([])
 const showDialog = ref(false)
+const showIncomeDialog = ref(false)
 const toast = useToast()
 const { t } = useI18n()
-
+const settings = useSettingsStore()
 
 const form = ref({
   name: '',
@@ -119,7 +206,6 @@ const form = ref({
   planned_expenses: null
 })
 
-const showIncomeDialog = ref(false)
 const incomeForm = ref({ id: null, amount: null })
 
 function authHeader() {
@@ -157,10 +243,8 @@ async function addIncome() {
 }
 
 async function addBudget() {
-  if (!form.value.name)
-    return alert(t('budgets.validation.name'))
-  if (!form.value.month)
-    return alert(t('budgets.validation.month'))
+  if (!form.value.name) return alert(t('budgets.validation.name'))
+  if (!form.value.month) return alert(t('budgets.validation.month'))
   if (!form.value.planned_income || form.value.planned_income <= 0)
     return alert(t('budgets.validation.plannedIncome'))
   if (!form.value.planned_expenses || form.value.planned_expenses < 0)
@@ -195,7 +279,6 @@ async function addBudget() {
     })
   }
 
-
   showDialog.value = false
   form.value = { name: '', month: '', planned_income: null, planned_expenses: null }
   await loadBudgets()
@@ -208,6 +291,21 @@ async function deleteBudget(id) {
   })
   await loadBudgets()
 }
+
+function formatCurrency(value) {
+  if (value == null) return '—'
+
+  const converted = settings.convertFromPLN(value)
+
+  return new Intl.NumberFormat(
+    settings.language === 'pl' ? 'pl-PL' : 'en-US',
+    {
+      style: 'currency',
+      currency: settings.currency
+    }
+  ).format(converted)
+}
+
 
 onMounted(loadBudgets)
 </script>

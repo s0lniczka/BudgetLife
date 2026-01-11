@@ -19,4 +19,6 @@ app.use(require('./middlewares/error'));
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`API on :${PORT}`));
 
+module.exports = app;
+
 

@@ -1,16 +1,27 @@
-<!-- src/views/RegisterView.vue -->
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300">
-    <div class="w-full max-w-md bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl p-8">
+  <div
+    class="min-h-screen flex items-center justify-center
+           bg-[var(--bg-main)] text-[var(--text-main)]"
+  >
+    <div
+      class="relative w-full max-w-md
+             bg-[var(--bg-card)]
+             backdrop-blur-lg
+             shadow-xl rounded-2xl p-8"
+    >
+      <!-- THEME TOGGLE -->
+      <div class="absolute top-3 right-3">
+        <ThemeToggle />
+      </div>
 
       <!-- Header -->
       <div class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">
+        <h1 class="text-3xl font-bold">
           {{ t('register.title') }}
         </h1>
-        <p class="text-sm text-gray-500 mt-1">
+        <p class="text-sm text-[var(--text-main)]/60 mt-1">
           {{ t('register.subtitlePrefix') }}
-          <span class="text-emerald-600 font-semibold">BudgetLife</span>
+          <span class="text-emerald-500 font-semibold">BudgetLife</span>
           {{ t('register.subtitleSuffix') }}
         </p>
       </div>
@@ -19,14 +30,13 @@
       <div class="space-y-4">
         <!-- Username -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">
+          <label class="text-sm font-medium">
             {{ t('register.username') }}
           </label>
           <span class="p-input-icon-left w-full">
             <i class="pi pi-user" />
             <InputText
               v-model="username"
-              type="text"
               :placeholder="t('register.usernamePlaceholder')"
               class="w-full"
             />
@@ -35,7 +45,7 @@
 
         <!-- Email -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">
+          <label class="text-sm font-medium">
             {{ t('register.email') }}
           </label>
           <span class="p-input-icon-left w-full">
@@ -51,7 +61,7 @@
 
         <!-- Password -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">
+          <label class="text-sm font-medium">
             {{ t('register.password') }}
           </label>
           <span class="p-input-icon-left w-full">
@@ -68,7 +78,7 @@
 
         <!-- Repeat password -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">
+          <label class="text-sm font-medium">
             {{ t('register.password2') }}
           </label>
           <span class="p-input-icon-left w-full">
@@ -87,6 +97,7 @@
         <InlineMessage v-if="error" severity="error" class="w-full">
           {{ error }}
         </InlineMessage>
+
         <InlineMessage v-if="ok" severity="success" class="w-full">
           {{ ok }}
         </InlineMessage>
@@ -95,13 +106,16 @@
         <Button
           :label="t('register.submit')"
           :loading="loading"
-          class="w-full bg-emerald-500 border-none hover:bg-emerald-600 transition-all duration-300"
+          class="w-full bg-emerald-500 border-none hover:bg-emerald-600 transition"
           @click="register"
         />
 
         <!-- Links -->
-        <div class="text-center text-sm text-gray-600 mt-3 space-y-1">
-          <RouterLink to="/login" class="hover:text-emerald-600 block">
+        <div class="text-center text-sm text-[var(--text-main)]/60 mt-3">
+          <RouterLink
+            to="/login"
+            class="hover:text-emerald-500"
+          >
             {{ t('register.haveAccount') }}
           </RouterLink>
         </div>
@@ -119,7 +133,16 @@ import Password from 'primevue/password'
 import Button from 'primevue/button'
 import InlineMessage from 'primevue/inlinemessage'
 
-defineOptions({ components: { InputText, Password, Button, InlineMessage } })
+import ThemeToggle from '@/components/ThemeToggle.vue'
+
+defineOptions({
+  components: {
+    InputText,
+    Password,
+    Button,
+    InlineMessage
+  }
+})
 
 const { t } = useI18n()
 
@@ -137,7 +160,6 @@ const register = async () => {
   error.value = ''
   ok.value = ''
 
-  // client-side validation
   if (!username.value || !email.value || !password.value) {
     error.value = t('register.validation.required')
     return
@@ -166,7 +188,6 @@ const register = async () => {
     const data = await res.json().catch(() => ({}))
 
     if (!res.ok) {
-      // backend może zwrócić swój komunikat — pokaż go, a jak nie ma, to daj i18n fallback
       error.value =
         data?.error ||
         data?.errors?.[0]?.msg ||
@@ -174,10 +195,12 @@ const register = async () => {
       return
     }
 
-    if (data?.token) localStorage.setItem('token', data.token)
+    if (data?.token) {
+      localStorage.setItem('token', data.token)
+    }
 
     ok.value = t('register.success', { username: username.value })
-  } catch (e) {
+  } catch {
     error.value = t('register.error')
   } finally {
     loading.value = false
@@ -187,6 +210,7 @@ const register = async () => {
 
 <style scoped>
 .p-input-icon-left > i {
-  color: #6b7280;
+  color: currentColor;
+  opacity: 0.6;
 }
 </style>

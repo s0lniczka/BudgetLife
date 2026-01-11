@@ -13,52 +13,82 @@ exports.list = async (req, res, next) => {
 };
 
 exports.create = async (req, res) => {
-  const { month, name, planned_income, actual_income, planned_expenses, actual_expenses } = req.body;
+  const {
+    month,
+    name,
+    planned_income,
+    planned_expenses
+  } = req.body;
+
   const user_id = req.user.id;
 
   try {
-    await db.query(
-      `INSERT INTO budgets (user_id, month, name, planned_income, actual_income, planned_expenses, actual_expenses)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-      [user_id, month, name, planned_income, actual_income, planned_expenses, actual_expenses]
+    const { rows } = await db.query(
+      `INSERT INTO budgets
+        (user_id, month, name, planned_income, actual_income, planned_expenses, actual_expenses)
+       VALUES ($1,$2,$3,$4,0,$5,0)
+       RETURNING *`,
+      [user_id, month, name, planned_income, planned_expenses]
     );
-    
-    const unlocked = await grantAchievement(user_id, 1); // Pierwszy budżet
-    
-    res.status(201).json({ 
-      message: "Budget created",
+
+    const budget = rows[0];
+
+    // ✅ EVENT: utworzenie budżetu
+    await db.query(
+      `INSERT INTO history (user_id, action)
+       VALUES ($1, $2)`,
+      [user_id, `Utworzono budżet: ${budget.name}`]
+    );
+
+    const unlocked = await grantAchievement(user_id, 1);
+
+    res.status(201).json({
+      budget,
       achievementUnlocked: unlocked,
-      achievementName: 'Pierwszy budżet'
-     });
+      achievementName: unlocked ? 'Pierwszy budżet' : null
+    });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-  
 };
+
 
 exports.addIncome = async (req, res, next) => {
+  const client = await db.connect()
   try {
-    const { amount } = req.body;
-    const id = Number(req.params.id);
+    const { amount } = req.body
+    const budgetId = Number(req.params.id)
+    const userId = req.user.id
 
-    if (!amount || isNaN(amount)) {
-      return res.status(400).json({ error: 'Nieprawidłowa kwota' });
-    }
+    await client.query('BEGIN')
 
-    const { rows } = await db.query(
-      `UPDATE budgets
-         SET actual_income = COALESCE(actual_income, 0) + $1
-       WHERE id = $2 AND user_id = $3
-       RETURNING *`,
-      [Number(amount), id, req.user.id]
-    );
+    await client.query(`
+      UPDATE budgets
+      SET actual_income = COALESCE(actual_income,0) + $1
+      WHERE id=$2 AND user_id=$3
+    `, [amount, budgetId, userId])
 
-    if (!rows[0]) return res.status(404).json({ error: 'Budżet nie znaleziony' });
-    res.json(rows[0]);
+    // 🔥 NOWY EVENT
+    await client.query(`
+      INSERT INTO history (user_id, action, date)
+      VALUES ($1, $2, NOW())
+    `, [
+      userId,
+      `Dodano przychód ${amount} zł do budżetu`
+    ])
+
+    await client.query('COMMIT')
+    res.json({ ok: true })
   } catch (e) {
-    next(e);
+    await client.query('ROLLBACK')
+    next(e)
+  } finally {
+    client.release()
   }
-};
+}
+
+
 
 
 exports.update = async (req, res) => {

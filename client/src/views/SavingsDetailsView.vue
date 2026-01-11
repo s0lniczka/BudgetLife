@@ -1,166 +1,136 @@
 <template>
-  <div class="min-h-screen  bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300 p-6 flex justify-center">
-    <div class="w-full max-w-5xl bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-8 space-y-10">
+  <div class="view-wrapper flex justify-center p-6">
+    <div class="w-full max-w-5xl app-card p-8 space-y-10">
 
       <!-- HEADER -->
       <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <button
+            class="text-lg font-bold opacity-70 hover:opacity-100"
+            @click="router.push('/savings')"
+            :title="t('savings.back')"
+          >
+            ←
+          </button>
 
-      <!-- LEWA STRONA -->
-      <div class="flex items-center gap-3">
-        <button
-          class="text-gray-600 font-bold hover:text-gray-900 text-xl"
-          @click="router.push('/savings')"
-          :title="t('savings.back')"
-        >
-          ←
-        </button>
+          <h1 class="text-3xl font-bold flex items-center gap-2">
+            🏆 {{ t('savings.detail.title') }}
+          </h1>
+        </div>
 
-        <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
-          🏆 {{ t('savings.details.title') }}
-        </h1>
+        <div class="flex items-center gap-3">
+          <Button
+            :label="t('common.edit')"
+            class="p-button-outlined"
+            @click="openEdit"
+          />
+          <Button
+            :label="t('common.delete')"
+            class="p-button-danger"
+            @click="deleteGoal"
+          />
+          <span class="opacity-70 text-sm whitespace-nowrap">
+            | {{ t('savings.deadline') }}: {{ formatDate(goal.deadline) }}
+          </span>
+        </div>
       </div>
-
-      <!-- PRAWA STRONA -->
-      <div class="flex items-center gap-3">
-        <button
-          class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded"
-          @click="openEdit"
-        >
-          {{ t('common.edit') }}
-        </button>
-
-        <button
-          class="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded"
-          @click="deleteGoal"
-        >
-          {{ t('common.delete') }}
-        </button>
-
-        <span class="text-gray-700 font-medium whitespace-nowrap">
-          | {{ t('savings.deadline') }}: {{ formatDate(goal.deadline) }}
-        </span>
-      </div>
-
-    </div>
-
-
 
       <!-- CEL -->
-    <div class="border rounded-xl p-6 bg-white/70">
+      <div class="border rounded-xl p-6 bg-black/5 dark:bg-white/5">
+        <h2 class="text-2xl font-semibold mb-4">
+          {{ goal.name }}
+        </h2>
 
-      <h2 class="text-2xl font-semibold text-gray-900 mb-4">
-        {{ goal.name }}
-      </h2>
+        <div class="grid grid-cols-12 gap-6 items-center md:divide-x">
 
-      <div class="grid grid-cols-12 gap-6 items-center md:divide-x">
+          <!-- LEWA -->
+          <div class="col-span-12 md:col-span-5 space-y-3">
+            <p><strong>{{ t('savings.target') }}</strong> {{ money(goal.target_amount) }}</p>
+            <p><strong>{{ t('savings.saved') }}</strong> {{ money(goal.saved_amount) }}</p>
 
-        <!-- LEWA STRONA -->
-        <div class="col-span-12 md:col-span-5 space-y-3">
-
-          <p class="text-gray-700">
-            <strong>{{ t('savings.target') }}</strong> {{ money(goal.target_amount) }}
-          </p>
-
-          <p class="text-gray-700">
-            <strong>{{ t('savings.saved') }}</strong> {{ money(goal.saved_amount) }}
-          </p>
-
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-medium text-gray-700"><strong>{{ t('savings.status') }}</strong></span>
-
-            <span
-              class="px-3 py-1 text-xs rounded-full font-semibold"
-              :class="statusBadgeClass"
-            >
-              {{translateStatus(goal.status) }}
-            </span>
-          </div>
-
-
-          <!-- Pasek postępu -->
-          <div class="mt-4 max-w-sm">
-            <div class="bg-gray-200 h-3 rounded-full overflow-hidden">
-              <div
-                class="h-3 transition-all"
-                :class="goal.status === 'completed'
-                  ? 'bg-emerald-500'
-                  : 'bg-blue-500'"
-                :style="{ width: progress + '%' }"
-              ></div>
+            <div class="flex items-center gap-2">
+              <strong>{{ t('savings.status') }}</strong>
+              <span
+                class="px-3 py-1 text-xs rounded-full font-semibold"
+                :class="statusBadgeClass"
+              >
+                {{ translateStatus(goal.status) }}
+              </span>
             </div>
-            <p class="mt-1 text-xs text-gray-600 text-right">
-              {{ progress }}%
-            </p>
-          </div>
-          <div
-            v-if="goal.status === 'completed'"
-            class="mt-3 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2 text-emerald-700 text-sm"
-          >
-            🎉 {{ t('savings.completedMessage') }}
+
+            <!-- PROGRESS -->
+            <div class="mt-4 max-w-sm">
+              <div class="h-3 rounded-full overflow-hidden bg-black/10 dark:bg-white/10 border border-black/20 dark:border-white/20 shadow-inner">
+                <div
+                  class="h-3 transition-all rounded-full"
+                  :class="goal.status === 'completed'
+                    ? 'bg-emerald-500'
+                    : 'bg-blue-500'"
+                  :style="{ width: progress + '%' }"
+                />
+              </div>
+              <p class="mt-1 text-xs opacity-70 text-right">
+                {{ progress }}%   
+              </p>
+            </div>
+
+            <div
+              v-if="goal.status === 'completed'"
+              class="mt-3 px-4 py-2 rounded-lg text-sm
+                     bg-emerald-500/10 text-emerald-600"
+            >
+              🎉 {{ t('savings.completedMessage') }}
+            </div>
           </div>
 
+          <!-- PRAWA / WYKRES -->
+          <div class="col-span-12 md:col-span-7 h-56">
+            <div class="flex gap-2 mb-2 justify-end">
+              <Button
+                size="small"
+                :outlined="chartMode !== 'count'"
+                @click="chartMode = 'count'"
+              >
+                {{ t('savings.chart.count') }}
+              </Button>
+              <Button
+                size="small"
+                :outlined="chartMode !== 'sum'"
+                @click="chartMode = 'sum'"
+              >
+                {{ t('savings.chart.sum') }}
+              </Button>
+            </div>
+
+            <Chart
+              type="bar"
+              :data="chartData"
+              :options="chartOptions"
+              class="w-full h-full"
+            />
+          </div>
 
         </div>
-
-        <!-- PRAWA STRONA -->
-        <div class="col-span-12 md:col-span-7 h-56">
-          <div class="flex gap-2 mb-2 justify-end">
-            <button
-              class="px-3 py-1 text-xs rounded border"
-              :class="chartMode === 'count'
-                ? 'bg-blue-500 text-white'
-                : 'bg-white text-gray-600'"
-              @click="chartMode = 'count'"
-            >
-              {{ t('savings.chart.count') }}
-            </button>
-
-            <button
-              class="px-3 py-1 text-xs rounded border"
-              :class="chartMode === 'sum'
-                ? 'bg-emerald-500 text-white'
-                : 'bg-white text-gray-600'"
-              @click="chartMode = 'sum'"
-            >
-              {{ t('savings.chart.sum') }}
-            </button>
-          </div>
-
-          <Chart
-            type="bar"
-            :data="chartData"
-            :options="chartOptions"
-            class="w-full h-full"
-          />
-        </div>
-
       </div>
-    </div>
 
-
-    <!-- </div> -->
-
-      <!-- DODAWANIE WPŁATY -->
+      <!-- DODAJ WPŁATĘ -->
       <div class="space-y-4 border-b pb-8">
-        <h3 class="text-xl font-semibold text-gray-900">{{ t('savings.addPayment') }}</h3>
+        <h3 class="text-xl font-semibold">{{ t('savings.addPayment') }}</h3>
 
-        <!-- Gdy cel ukończony -->
         <div
           v-if="goal.status === 'completed'"
-          class="text-sm text-gray-500 italic"
+          class="opacity-60 italic"
         >
           {{ t('savings.cannotAdd') }}
         </div>
 
-        <!-- Gdy w trakcie -->
         <div v-else class="flex gap-3 items-center">
           <InputNumber
             v-model="paymentAmount"
-            inputClass="w-40"
             mode="currency"
             currency="PLN"
             locale="pl-PL"
-            placeholder="Kwota"
+            class="w-40"
           />
           <Button
             :label="t('common.add')"
@@ -170,60 +140,55 @@
         </div>
       </div>
 
-     
-
       <!-- HISTORIA WPŁAT -->
       <div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-4">{{ t('savings.history') }}</h3>
+        <h3 class="text-xl font-semibold mb-4">{{ t('savings.history') }}</h3>
 
-        <div v-if="payments.length === 0" class="text-gray-500">
+        <div v-if="payments.length === 0" class="opacity-60">
           {{ t('savings.noPayments') }}
         </div>
 
-        <!-- HISTORIA WPŁAT – TIMELINE -->
         <div
           v-else
-          class="relative space-y-6 transition"
+          class="relative space-y-6"
           :class="goal.status === 'completed' ? 'opacity-70 grayscale' : ''"
         >
-
-          <!-- pionowa linia -->
-          <div class="absolute left-4 top-0 bottom-0 w-px bg-gray-300"></div>
+          <!-- linia -->
+          <div class="absolute left-4 top-0 bottom-0 w-px bg-black/20 dark:bg-white/20"></div>
 
           <div
             v-for="p in payments"
             :key="p.id"
-            class="relative flex items-center gap-4"
+            class="relative flex items-center gap-4 group"
           >
             <!-- kropka -->
             <div
               class="relative z-10 flex items-center justify-center
-                    w-6 h-6 rounded-full bg-emerald-500
-                    text-white text-xs shadow"
+                     w-6 h-6 rounded-full bg-emerald-500
+                     text-white text-xs shadow"
             >
               +
             </div>
 
-            <!-- karta -->
+            <!-- karta wpłaty -->
             <div
-              class="group flex items-center justify-between
-                    w-full bg-white rounded-lg shadow
-                    px-5 py-3
-                    text-[15px]
-                    hover:bg-gray-50 transition"
+              class="flex items-center justify-between
+                     w-full rounded-lg px-5 py-3
+                     bg-white dark:bg-black/20
+                     shadow-sm transition
+                     group-hover:bg-black/5 dark:group-hover:bg-white/5"
             >
-              <!-- lewa strona -->
-              <div class="flex items-center gap-3 text-sm text-gray-500">
+              <div class="flex items-center gap-3 text-sm opacity-70">
                 <span>{{ formatDate(p.date) }}</span>
-                <span class="text-gray-300">|</span>
-                <strong class="text-emerald-700">
+                <span class="opacity-30">|</span>
+                <strong class="text-emerald-500">
                   {{ money(p.amount) }}
                 </strong>
               </div>
 
-              <!-- prawa strona: akcje -->
+              <!-- IKONY NA HOVER -->
               <div
-                class="flex gap-2 opacity-0 group-hover:opacity-100 transition"
+                class="flex gap-3 opacity-0 group-hover:opacity-100 transition"
               >
                 <button
                   class="text-blue-500 hover:text-blue-700"
@@ -242,12 +207,11 @@
                 </button>
               </div>
             </div>
-
           </div>
         </div>
-
-
       </div>
+
+      <!-- EDIT GOAL -->
       <Dialog
         v-model:visible="editDialog"
         :header="t('savings.dialog.editGoal')"
@@ -255,65 +219,41 @@
         class="w-[90vw] md:w-[30rem]"
       >
         <div class="space-y-4">
+          <InputText v-model="editForm.name" class="w-full" />
+          <InputNumber
+            v-model="editForm.target_amount"
+            mode="currency"
+            currency="PLN"
+            locale="pl-PL"
+            class="w-full"
+          />
+          <Calendar v-model="editForm.deadline" showIcon class="w-full" />
 
-          <div>
-            <label class="block text-sm font-medium mb-1">{{ t('savings.details.title') }}</label>
-            <InputText v-model="editForm.name" class="w-full" />
+          <div class="flex justify-end gap-2">
+            <Button text @click="editDialog = false">{{ t('common.cancel') }}</Button>
+            <Button class="p-button-success" @click="saveEdit">{{ t('common.save') }}</Button>
           </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">{{ t('savings.target') }}</label>
-            <InputNumber
-              v-model="editForm.target_amount"
-              mode="currency"
-              currency="PLN"
-              locale="pl-PL"
-              class="w-full"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">{{ t('savings.deadline') }}</label>
-            <Calendar v-model="editForm.deadline" showIcon class="w-full" />
-          </div>
-
-          <div class="flex justify-end gap-2 mt-4">
-            <Button :label="t('common.cancel')" class="p-button-text" @click="editDialog = false" />
-            <Button :label="t('common.save')" class="p-button-success" @click="saveEdit" />
-          </div>
-
         </div>
       </Dialog>
+
+      <!-- EDIT PAYMENT -->
       <Dialog
         v-model:visible="editPaymentDialog"
         header="Edytuj wpłatę"
         modal
         class="w-[90vw] md:w-[22rem]"
       >
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Kwota</label>
-            <InputNumber
-              v-model="editedPayment.amount"
-              mode="currency"
-              currency="PLN"
-              locale="pl-PL"
-              class="w-full"
-            />
-          </div>
+        <InputNumber
+          v-model="editedPayment.amount"
+          mode="currency"
+          currency="PLN"
+          locale="pl-PL"
+          class="w-full"
+        />
 
-          <div class="flex justify-end gap-2 mt-4">
-            <Button
-              label="Anuluj"
-              class="p-button-text"
-              @click="editPaymentDialog = false"
-            />
-            <Button
-              label="Zapisz"
-              class="p-button-success"
-              @click="savePaymentEdit"
-            />
-          </div>
+        <div class="flex justify-end gap-2 mt-4">
+          <Button text @click="editPaymentDialog = false">{{ t('common.cancel') }}</Button>
+          <Button class="p-button-success" @click="savePaymentEdit">{{ t('common.save') }}</Button>
         </div>
       </Dialog>
 
@@ -332,6 +272,7 @@ import Calendar from 'primevue/calendar'
 import Chart from 'primevue/chart'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
+import {useSettingsStore} from '@/stores/settings'
 
 
 const API = 'http://localhost:5000/api'
@@ -347,6 +288,7 @@ const payments = ref([])
 const paymentAmount = ref(null)
 
 const { t } = useI18n()
+const settings = useSettingsStore()
 
 const chartMode = ref('count') // count, sum
 
@@ -367,9 +309,7 @@ function auth() {
   return { Authorization: `Bearer ${localStorage.getItem('token')}` }
 }
 
-function money(v) {
-  return Number(v).toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' })
-}
+
 
 function formatDate(d) {
   if (!d) return 'Brak terminu'
@@ -420,7 +360,7 @@ const chartData = computed(() => ({
           borderRadius: 6
         }
       : {
-          label: 'Suma wpłat (PLN)',
+          label: `Suma wpłat (${settings.currency})`,
           data: monthlyStats.value.sums,
           backgroundColor: '#34d399',
           borderRadius: 6
@@ -432,32 +372,30 @@ const chartData = computed(() => ({
 const chartOptions = {
   maintainAspectRatio: false,
   responsive: true,
+
+  layout: {
+    padding: {
+      bottom: 24, // 🔥 ODSUWA OŚ X OD BORDA
+      top: 8,
+      left: 8,
+      right: 8
+    }
+  },
+
   plugins: {
     legend: {
       position: 'bottom',
       labels: {
         boxWidth: 12,
         padding: 16,
-        font: {
-          size: 12
-        }
-      }
-    },
-    tooltip: {
-      callbacks: {
-        label(ctx) {
-          return chartMode.value === 'sum'
-            ? `${ctx.raw.toLocaleString('pl-PL')} zł`
-            : `${ctx.raw} wpłat`
-        }
+        font: { size: 12 }
       }
     }
   },
+
   scales: {
     x: {
-      grid: {
-        display: false
-      }
+      grid: { display: false }
     },
     y: {
       beginAtZero: true,
@@ -470,6 +408,7 @@ const chartOptions = {
     }
   }
 }
+
 
 const statusBadgeClass = computed(() => {
   switch (goal.value.status) {
@@ -627,6 +566,20 @@ async function saveEdit() {
 
   editDialog.value = false
   await loadGoal()
+}
+
+function money(value) {
+  if (value == null) return '—'
+
+  const converted = settings.convertFromPLN(value)
+
+  return new Intl.NumberFormat(
+    settings.language === 'pl' ? 'pl-PL' : 'en-US',
+    {
+      style: 'currency',
+      currency: settings.currency
+    }
+  ).format(converted)
 }
 
 

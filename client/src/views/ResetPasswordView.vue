@@ -1,21 +1,34 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300">
-    <div class="w-full max-w-md bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl p-8">
+  <div
+    class="min-h-screen flex items-center justify-center
+           bg-[var(--bg-main)] text-[var(--text-main)]"
+  >
+    <div
+      class="relative w-full max-w-md
+             bg-[var(--bg-card)]
+             backdrop-blur-lg
+             shadow-xl rounded-2xl p-8"
+    >
+      <!-- THEME TOGGLE -->
+      <div class="absolute top-3 right-3">
+        <ThemeToggle />
+      </div>
 
       <!-- Header -->
       <div class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">
+        <h1 class="text-3xl font-bold">
           {{ t('reset.title') }}
         </h1>
-        <p class="text-sm text-gray-500 mt-1">
+        <p class="text-sm text-[var(--text-main)]/60 mt-1">
           {{ t('reset.subtitle') }}
         </p>
       </div>
 
+      <!-- Form -->
       <div class="space-y-4">
         <!-- New password -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">
+          <label class="text-sm font-medium">
             {{ t('reset.password') }}
           </label>
           <span class="p-input-icon-left w-full">
@@ -32,7 +45,7 @@
 
         <!-- Repeat password -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700">
+          <label class="text-sm font-medium">
             {{ t('reset.password2') }}
           </label>
           <span class="p-input-icon-left w-full">
@@ -51,6 +64,7 @@
         <InlineMessage v-if="error" severity="error" class="w-full">
           {{ error }}
         </InlineMessage>
+
         <InlineMessage v-if="ok" severity="success" class="w-full">
           {{ ok }}
         </InlineMessage>
@@ -59,7 +73,7 @@
         <Button
           :label="t('reset.submit')"
           :loading="loading"
-          class="w-full bg-emerald-500 border-none hover:bg-emerald-600 transition-all duration-300"
+          class="w-full bg-emerald-500 border-none hover:bg-emerald-600 transition"
           @click="resetPass"
         />
       </div>
@@ -76,10 +90,17 @@ import Password from 'primevue/password'
 import Button from 'primevue/button'
 import InlineMessage from 'primevue/inlinemessage'
 
-defineOptions({ components: { Password, Button, InlineMessage } })
+import ThemeToggle from '@/components/ThemeToggle.vue'
+
+defineOptions({
+  components: {
+    Password,
+    Button,
+    InlineMessage
+  }
+})
 
 const { t } = useI18n()
-
 const route = useRoute()
 const router = useRouter()
 
@@ -133,8 +154,7 @@ const resetPass = async () => {
 
     ok.value = t('reset.success')
     setTimeout(() => router.push('/login'), 2000)
-
-  } catch (e) {
+  } catch {
     error.value = t('reset.error')
   } finally {
     loading.value = false
@@ -144,6 +164,7 @@ const resetPass = async () => {
 
 <style scoped>
 .p-input-icon-left > i {
-  color: #6b7280;
+  color: currentColor;
+  opacity: 0.6;
 }
 </style>

@@ -1,7 +1,18 @@
 import { i18n } from '@/i18n'
 import { defineStore } from 'pinia'
 
+const FIXED_RATES = {
+  PLN: 1,
+  EUR: 0.23,
+  USD: 0.25,
+  GBP: 0.20,
+  JPY: 36.5
+}
+
+
 export const useSettingsStore = defineStore('settings', {
+
+    
   state: () => ({
     theme: localStorage.getItem('theme') || 'light',
     currency: localStorage.getItem('currency') || 'PLN',
@@ -11,12 +22,18 @@ export const useSettingsStore = defineStore('settings', {
 
   actions: {
     initTheme() {
-      const html = document.documentElement
-      if (this.theme === 'dark') {
-        html.classList.add('dark')
-      } else {
-        html.classList.remove('dark')
-      }
+        const saved = localStorage.getItem('theme')
+
+        // ⬇️ jawny default
+        this.theme = saved === 'dark' || saved === 'light'
+            ? saved
+            : 'light'
+
+        const root = document.documentElement
+        const isDark = this.theme === 'dark'
+
+        root.classList.toggle('dark', isDark)
+        root.style.colorScheme = isDark ? 'dark' : 'light'
     },
 
     setTheme(theme) {
@@ -24,6 +41,14 @@ export const useSettingsStore = defineStore('settings', {
       localStorage.setItem('theme', theme)
       this.initTheme()
     },
+
+    toggleTheme() {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark'
+    localStorage.setItem('theme', this.theme)
+    this.initTheme()
+    console.log('TOGGLE', this.theme)
+    },
+
 
     persist() {
       localStorage.setItem('currency', this.currency)
@@ -43,6 +68,18 @@ export const useSettingsStore = defineStore('settings', {
       this.language = lang
       localStorage.setItem('language', lang)
       i18n.global.locale.value = lang
+    },
+
+    setCurrency(currency) {
+      this.currency = currency
+      localStorage.setItem('currency', currency)
+    },
+
+    convertFromPLN(value) {
+        if (value == null) return null
+        const rate = FIXED_RATES[this.currency] || 1
+        return value * rate
     }
+
   }
 })

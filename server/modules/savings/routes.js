@@ -10,6 +10,8 @@ r.get('/:id', c.getOne);
 r.post('/', c.create);
 r.put('/:id', c.update);
 r.delete('/:id', c.remove);
+r.put('/:id/cancel', c.cancel);
+
 
 // wpłaaty
 r.get('/:id/payments', c.listPayments);

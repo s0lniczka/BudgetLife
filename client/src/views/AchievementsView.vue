@@ -1,47 +1,74 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-200 via-sky-200 to-indigo-300 p-4 md:p-6">
-    <div class="max-w-6xl mx-auto bg-white/85 backdrop-blur-lg rounded-2xl shadow-2xl p-6 md:p-8">
-      <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900">
-          🏆 {{ t('achievements.title') }}
-        </h1>
-      </div>
+  <div class="view-wrapper space-y-6">
 
-      <div v-if="loading" class="text-gray-600">{{t('achievements.loading')}}</div>
+    <!-- HEADER -->
+    <div class="app-card p-6">
+      <h1 class="text-2xl md:text-3xl font-extrabold">
+        🏆 {{ t('achievements.title') }}
+      </h1>
+    </div>
 
-      <div v-else class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- LOADING -->
+    <div v-if="loading" class="app-card p-6 opacity-70">
+      {{ t('achievements.loading') }}
+    </div>
+
+    <!-- ACHIEVEMENTS GRID -->
+    <div
+      v-else
+      class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+    >
+      <div
+        v-for="a in all"
+        :key="a.id"
+        class="app-card p-5 transition"
+        :class="unlockedIds.has(a.id)
+          ? 'ring-2 ring-emerald-400/40'
+          : 'opacity-70'"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="font-semibold text-lg">
+              {{ a.name }}
+            </h3>
+            <p class="text-sm opacity-70 mt-1">
+              {{ a.description }}
+            </p>
+          </div>
+
+          <i
+            class="pi text-xl"
+            :class="unlockedIds.has(a.id)
+              ? 'pi-check-circle text-emerald-500'
+              : 'pi-lock opacity-50'"
+          />
+        </div>
+
+        <div class="mt-4">
+          <Tag
+            :severity="unlockedIds.has(a.id) ? 'success' : 'secondary'"
+            :value="
+              unlockedIds.has(a.id)
+                ? t('achievements.status.unlocked')
+                : t('achievements.status.locked')
+            "
+          />
+        </div>
+
         <div
-          v-for="a in all"
-          :key="a.id"
-          class="rounded-xl p-5 border shadow-sm"
-          :class="unlockedIds.has(a.id) ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-black/10 opacity-70'"
+          v-if="unlockedMap.get(a.id)?.date_awarded"
+          class="mt-2 text-xs opacity-60"
         >
-          <div class="flex items-start justify-between">
-            <div>
-              <h3 class="font-semibold text-gray-900">
-                {{ a.name }}
-              </h3>
-              <p class="text-sm text-gray-600 mt-1">{{ a.description }}</p>
-            </div>
-            <i
-              class="pi"
-              :class="unlockedIds.has(a.id) ? 'pi-check-circle text-emerald-500' : 'pi-lock text-gray-400'"
-            ></i>
-          </div>
-
-          <div class="mt-4">
-            <Tag
-              :severity="unlockedIds.has(a.id) ? 'success' : 'secondary'"
-              :value="unlockedIds.has(a.id) ? t('achievements.status.unlocked') : t('achievements.status.locked')"
-            />
-          </div>
-
-          <div v-if="unlockedMap.get(a.id)?.date_awarded" class="mt-2 text-xs text-gray-500">
-            {{t('achievements.earnedAt')}}: {{ new Date(unlockedMap.get(a.id).date_awarded).toLocaleString() }}
-          </div>
+          {{ t('achievements.earnedAt') }}:
+          {{
+            new Date(
+              unlockedMap.get(a.id).date_awarded
+            ).toLocaleString()
+          }}
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -56,13 +83,9 @@ const API = 'http://localhost:5000/api'
 const loading = ref(true)
 const all = ref([])
 const mine = ref([])
-const { t } = useI18n()
-
-
 const unlockedIds = ref(new Set())
 const unlockedMap = ref(new Map())
-
-
+const { t } = useI18n()
 
 onMounted(async () => {
   loading.value = true
@@ -104,5 +127,4 @@ onMounted(async () => {
     loading.value = false
   }
 })
-
 </script>

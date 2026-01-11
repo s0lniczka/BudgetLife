@@ -75,6 +75,8 @@
     "welcome": "Witaj",
     "email": "Twój e-mail",
     "currency": "Waluta",
+    "totalExpenses": "Łącznie wydatki",
+
 
     "balance": "Saldo",
     "activeBudgets": "Aktywne budżety",
@@ -202,7 +204,7 @@
   },
   "savings": {
     "back": "Wróć",
-    "details": {
+    "detail": {
       "title": "Szczegóły celu"
     },
     "target": "Cel",
@@ -215,6 +217,9 @@
       "completed": "Zakończony",
       "canceled": "Przerwany",
       "failed": "Nieudany"
+    },
+    "dialog":{
+        "editGoal": "Zedytuj cel"
     },
 
     "completedMessage": "Gratulacje! Osiągnąłeś swój cel oszczędnościowy.",
@@ -265,6 +270,31 @@
   },
 
   "createError": "Błąd podczas tworzenia celu"
+  },
+
+  "stats": {
+    "title": "Statystyki",
+    "subtitle": "Podsumowanie Twojej aktywności finansowej",
+
+    "totalIncome": "Łączne przychody",
+    "totalExpenses": "Łączne wydatki",
+    "totalSaved": "Łącznie zaoszczędzono",
+    "achievements": "Osiągnięcia",
+
+    "history": "Historia zdarzeń",
+    "noHistory": "Brak zdarzeń do wyświetlenia",
+
+    "filters": {
+      "type": "Typ zdarzenia"
+    },
+
+    "types": {
+      "income": "Przychód",
+      "expense": "Wydatek",
+      "saving": "Oszczędność",
+      "achievement": "Osiągnięcie",
+      "budget": "Budżet"
+    }
   }
 }
 
