@@ -1,19 +1,19 @@
 <template>
   <div class="view-wrapper space-y-6">
 
-    <!-- HEADER -->
+    
     <div class="app-card p-6">
       <h1 class="text-2xl md:text-3xl font-extrabold">
         🏆 {{ t('achievements.title') }}
       </h1>
     </div>
 
-    <!-- LOADING -->
+    
     <div v-if="loading" class="app-card p-6 opacity-70">
       {{ t('achievements.loading') }}
     </div>
 
-    <!-- ACHIEVEMENTS GRID -->
+    
     <div
       v-else
       class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"

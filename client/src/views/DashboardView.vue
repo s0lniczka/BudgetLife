@@ -1,7 +1,7 @@
 <template>
   <div class="view-wrapper space-y-8">
 
-    <!-- HEADER -->
+    
     <div class="app-card p-6">
       <h1 class="text-3xl font-extrabold">
         <span class="mr-2">👋</span>
@@ -18,10 +18,10 @@
       </p>
     </div>
 
-    <!-- TOP GRID -->
+    
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- METRICS -->
+      
       <div class="lg:col-span-2 grid sm:grid-cols-3 gap-6">
         <div class="app-card p-5 space-y-2">
           <div class="font-semibold flex items-center gap-2">
@@ -58,7 +58,7 @@
         </div>
       </div>
 
-      <!-- CHART -->
+      
       <div class="app-card p-4 relative">
         <div class="flex justify-between items-center mb-3">
           <h2 class="text-lg font-semibold">
@@ -106,7 +106,7 @@
       </div>
     </div>
 
-    <!-- RECENT TRANSACTIONS -->
+    
     <div class="app-card p-6">
       <h2 class="text-xl font-semibold mb-4">
         {{ t('dashboard.recentTransactions') }}
@@ -163,7 +163,7 @@
   class="app-card p-6 flex flex-col md:flex-row
          md:items-center md:justify-between gap-4"
 >
-  <!-- LEWA STRONA -->
+  
   <div>
     <h3 class="font-semibold text-lg flex items-center gap-2">
       🚀 Co dalej?
@@ -173,7 +173,7 @@
     </p>
   </div>
 
-  <!-- PRAWA STRONA: CTA -->
+  
   <div class="flex gap-3">
     <Button
       severity="success"
@@ -211,7 +211,7 @@ const API = 'http://localhost:5000/api'
 const { t } = useI18n()
 const settings = useSettingsStore()
 
-/* STATE */
+
 const user = ref(null)
 const budgets = ref([])
 const selectedBudget = ref(null)
@@ -225,7 +225,7 @@ const transactions = ref([])
 const loadingTransactions = ref(true)
 const loadingChart = ref(false)
 
-/* CHART */
+
 const chartRef = ref(null)
 const isDark = () => document.documentElement.classList.contains('dark')
 
@@ -270,7 +270,6 @@ const doughnutOptions = ref({
   cutout: '65%'
 })
 
-/* HELPERS */
 function authHeader() {
   return { Authorization: `Bearer ${localStorage.getItem('token')}` }
 }
@@ -290,7 +289,7 @@ function formatCurrency(value) {
 }
 
 
-/* LOADERS */
+
 onMounted(async () => {
   await loadBudgets()
   await loadSummary()
@@ -372,12 +371,12 @@ async function loadRecentExpenses() {
 
 function formatDate(value) {
   const d = new Date(value)
-  d.setHours(d.getHours() + 1) // ⚠️ DST warning
+  d.setHours(d.getHours() + 1) 
   return d.toISOString().slice(0, 10)
 }
 
 
-/* WATCHERS */
+
 watch(selectedBudget, async () => {
   if (!selectedBudget.value) return
   await loadExpensesByCategory()

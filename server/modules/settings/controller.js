@@ -4,7 +4,6 @@ function getUserId(req) {
   return req.user?.id || req.user?.user_id;
 }
 
-/* ===================== GET SETTINGS ===================== */
 exports.get = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -16,7 +15,7 @@ exports.get = async (req, res) => {
       [userId]
     );
 
-    // jeśli brak – tworzymy z defaultami
+    // jeśli brak istawien to podstawowoe
     if (!rows.length) {
       const { rows: created } = await db.query(
         `INSERT INTO settings (user_id, language, currency, notifications, theme)
@@ -34,7 +33,6 @@ exports.get = async (req, res) => {
   }
 };
 
-/* ===================== UPDATE SETTINGS ===================== */
 exports.update = async (req, res) => {
   try {
     const userId = getUserId(req);

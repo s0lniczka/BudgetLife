@@ -7,8 +7,7 @@ function getUserId(req) {
 exports.getStats = async (req, res) => {
   try {
     const userId = getUserId(req);
-
-    // ===== SUMMARY =====
+    //zwaraca dane razem
     const [
       incomeSum,
       expenseSum,
@@ -48,11 +47,6 @@ exports.getStats = async (req, res) => {
       achievements: Number(achievementsCount.rows[0].total)
     };
 
-    // ===== EVENTS =====
-    // UWAGA:
-    // - Budżety i cele tworzone mają amount = NULL (żeby UI nie pokazywał kwoty)
-    // - Przychody mają amount z income_transactions
-    // - Wpłaty do celów mają amount z savings_transactions
     const { rows: events } = await db.query(
       `
       (

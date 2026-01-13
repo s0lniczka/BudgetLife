@@ -2,7 +2,7 @@ const r = require('express').Router();
 const db = require('../../config/db');
 const auth = require('../../middlewares/auth');
 
-// ✅ GET /api/user/me — zwraca dane zalogowanego użytkownika
+// GET /api/user/me — zwraca dane zalogowanego użytkownika
 r.get('/me', auth, async (req, res, next) => {
   try {
     const { rows } = await db.query(

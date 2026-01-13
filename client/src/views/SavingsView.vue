@@ -1,7 +1,7 @@
 <template>
   <div class="view-wrapper space-y-6">
 
-    <!-- HEADER -->
+    
     <div class="app-card p-6 flex justify-between items-center">
       <h1 class="text-3xl font-bold">
         🏆 {{ t('savings.title') }}
@@ -13,7 +13,7 @@
       />
     </div>
 
-    <!-- FILTERS -->
+    
     <div class="app-card p-4 flex gap-2 flex-wrap">
       <button
         v-for="f in filters"
@@ -33,7 +33,7 @@
       </button>
     </div>
 
-    <!-- EMPTY STATE -->
+    
     <div
       v-if="goals.length === 0"
       class="app-card p-10 text-center opacity-60"
@@ -41,7 +41,7 @@
       {{ t('savings.filters.all') }}
     </div>
 
-    <!-- GOALS GRID -->
+    
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       <div
         v-for="g in filteredGoals"
@@ -64,7 +64,7 @@
           </div>
         </div>
 
-        <!-- PROGRESS -->
+        
         <div>
           <div class="text-sm opacity-70 mb-1">
             {{ formatCurrency(g.saved_amount) }}
@@ -84,7 +84,7 @@
           </div>
         </div>
 
-        <!-- ACTIONS -->
+        
         <div class="flex justify-between mt-4">
           <Button
             :label="t('savings.details')"
@@ -108,7 +108,7 @@
       </div>
     </div>
 
-    <!-- NEW GOAL DIALOG -->
+    
     <Dialog
       v-model:visible="showDialog"
       :header="t('savings.form.new')"

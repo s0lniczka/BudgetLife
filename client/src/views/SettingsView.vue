@@ -20,12 +20,12 @@ onMounted(() => {
 
     <div class="app-card max-w-xl mx-auto p-6 space-y-6">
 
-      <!-- HEADER -->
+      
       <h2 class="text-2xl font-bold flex items-center gap-2">
         ⚙️ {{ t('settings.title') }}
       </h2>
 
-      <!-- THEME -->
+      
       <div class="flex justify-between items-center">
         <span class="font-medium">
           {{ t('settings.theme') }}
@@ -40,7 +40,7 @@ onMounted(() => {
         </Button>
       </div>
 
-      <!-- CURRENCY -->
+      
       <div class="flex justify-between items-center">
         <span class="font-medium">
           {{ t('settings.currency') }}
@@ -54,7 +54,7 @@ onMounted(() => {
         />
       </div>
 
-      <!-- LANGUAGE -->
+      
       <div class="flex justify-between items-center">
         <span class="font-medium">
           {{ t('settings.language') }}
@@ -73,7 +73,7 @@ onMounted(() => {
         />
       </div>
 
-      <!-- POINTS -->
+      
       <div class="pt-4 border-t border-black/10 dark:border-white/10 font-semibold">
         🏆 {{ t('settings.points') }}:
         <span class="text-emerald-500">

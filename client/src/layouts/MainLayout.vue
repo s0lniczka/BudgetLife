@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen flex bg-[var(--bg-main)] text-[var(--text-main)]">
-    <!-- SIDEBAR -->
+    
     <aside
       class="relative z-20
              w-64
@@ -8,12 +8,12 @@
              border-r border-black/5 dark:border-white/10
              flex flex-col p-4"
     >
-      <!-- LOGO -->
+      
       <h1 class="text-xl font-bold text-[var(--brand-color)] mb-6">
         BudgetLife
       </h1>
 
-      <!-- MENU -->
+      
       <nav class="flex-1 space-y-1">
         <RouterLink to="/dashboard" class="menu-link">
           <i class="pi pi-home mr-3"></i> {{ t('menu.dashboard') }}
@@ -44,9 +44,9 @@
         </RouterLink>
       </nav>
 
-      <!-- FOOTER -->
+      
       <div class="space-y-3 mt-4">
-        <!-- THEME TOGGLE -->
+        
         <Button
           type="button"
           @click="settings.toggleTheme"
@@ -56,7 +56,7 @@
           <span v-else>☀️ Light mode</span>
         </Button>
 
-        <!-- LOGOUT -->
+        
         <Button
           label="Wyloguj"
           icon="pi pi-sign-out"

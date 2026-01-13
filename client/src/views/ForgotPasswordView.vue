@@ -9,12 +9,12 @@
              backdrop-blur-lg
              shadow-xl rounded-2xl p-8"
     >
-      <!-- THEME TOGGLE -->
+      
       <div class="absolute top-3 right-3">
         <ThemeToggle />
       </div>
 
-      <!-- Header -->
+      
       <div class="text-center mb-6">
         <h1 class="text-3xl font-bold">
           {{ t('forgot.title') }}
@@ -24,9 +24,9 @@
         </p>
       </div>
 
-      <!-- Form -->
+      
       <div class="space-y-4">
-        <!-- Email -->
+        
         <div class="space-y-2">
           <label class="text-sm font-medium">
             {{ t('forgot.email') }}
@@ -42,7 +42,7 @@
           </span>
         </div>
 
-        <!-- Messages -->
+        
         <InlineMessage v-if="error" severity="error" class="w-full">
           {{ error }}
         </InlineMessage>
@@ -51,7 +51,7 @@
           {{ ok }}
         </InlineMessage>
 
-        <!-- Button -->
+        
         <Button
           :label="t('forgot.send')"
           :loading="loading"
@@ -59,7 +59,7 @@
           @click="sendLink"
         />
 
-        <!-- Back -->
+        
         <div class="text-center text-sm text-[var(--text-main)]/60 mt-3">
           <RouterLink
             to="/login"

@@ -5,9 +5,6 @@ function getUserId(req) {
   return req.user?.user_id || req.user?.id;
 }
 
-/* =========================
-   LISTA CELÓW
-========================= */
 exports.list = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -29,9 +26,6 @@ exports.list = async (req, res) => {
   }
 };
 
-/* =========================
-   JEDEN CEL
-========================= */
 exports.getOne = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -57,9 +51,6 @@ exports.getOne = async (req, res) => {
   }
 };
 
-/* =========================
-   TWORZENIE CELU
-========================= */
 exports.create = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -83,9 +74,6 @@ exports.create = async (req, res) => {
   }
 };
 
-/* =========================
-   USUWANIE CELU
-========================= */
 exports.remove = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -135,9 +123,6 @@ exports.cancel = async (req, res) => {
 };
 
 
-/* =========================
-   LISTA WPŁAT
-========================= */
 exports.listPayments = async (req, res) => {
   try {
     const goalId = Number(req.params.id);
@@ -156,9 +141,6 @@ exports.listPayments = async (req, res) => {
   }
 };
 
-/* =========================
-   DODAWANIE WPŁATY
-========================= */
 exports.addPayment = async (req, res) => {
   const client = await db.connect();
 

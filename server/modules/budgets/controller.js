@@ -33,7 +33,7 @@ exports.create = async (req, res) => {
 
     const budget = rows[0];
 
-    // ✅ EVENT: utworzenie budżetu
+
     await db.query(
       `INSERT INTO history (user_id, action)
        VALUES ($1, $2)`,
@@ -55,39 +55,65 @@ exports.create = async (req, res) => {
 
 
 exports.addIncome = async (req, res, next) => {
-  const client = await db.connect()
+  const client = await db.connect();
+
   try {
-    const { amount } = req.body
-    const budgetId = Number(req.params.id)
-    const userId = req.user.id
+    const { amount } = req.body;
+    const budget_id = Number(req.params.id);
+    const user_id = req.user.id;
 
-    await client.query('BEGIN')
+    if (!amount || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ error: 'Nieprawidłowa kwota' });
+    }
 
-    await client.query(`
-      UPDATE budgets
-      SET actual_income = COALESCE(actual_income,0) + $1
-      WHERE id=$2 AND user_id=$3
-    `, [amount, budgetId, userId])
+    await client.query('BEGIN');
 
-    // 🔥 NOWY EVENT
-    await client.query(`
-      INSERT INTO history (user_id, action, date)
-      VALUES ($1, $2, NOW())
-    `, [
-      userId,
-      `Dodano przychód ${amount} zł do budżetu`
-    ])
 
-    await client.query('COMMIT')
-    res.json({ ok: true })
+    const { rows } = await client.query(
+      `SELECT * FROM budgets WHERE id=$1 AND user_id=$2`,
+      [budget_id, user_id]
+    );
+
+    if (!rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Budżet nie znaleziony' });
+    }
+
+    const budget = rows[0];
+
+    await client.query(
+      `INSERT INTO income_transactions (user_id, budget_id, amount)
+       VALUES ($1, $2, $3)`,
+      [user_id, budget_id, Number(amount)]
+    );
+
+
+    const { rows: [updated] } = await client.query(
+      `UPDATE budgets
+         SET actual_income = COALESCE(actual_income, 0) + $1
+       WHERE id = $2
+       RETURNING *`,
+      [Number(amount), budget_id]
+    );
+
+ 
+    await client.query(
+      `INSERT INTO history (user_id, action)
+       VALUES ($1, $2)`,
+      [user_id, `Dodano przychód ${amount} zł do budżetu ${budget.name}`]
+    );
+
+    await client.query('COMMIT');
+
+    res.json(updated);
+
   } catch (e) {
-    await client.query('ROLLBACK')
-    next(e)
+    await client.query('ROLLBACK');
+    next(e);
   } finally {
-    client.release()
+    client.release();
   }
-}
-
+};
 
 
 

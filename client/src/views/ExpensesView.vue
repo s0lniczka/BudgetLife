@@ -1,7 +1,7 @@
 <template>
   <div class="view-wrapper space-y-6">
 
-    <!-- HEADER -->
+    
     <div class="app-card p-6 flex justify-between items-center">
       <h1 class="text-3xl font-bold">
         🧾 {{ t('expenses.title') }}
@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <!-- TABLE -->
+    
     <div class="app-card p-6">
       <DataTable
         :value="expenses"
@@ -60,7 +60,7 @@
       </DataTable>
     </div>
 
-    <!-- DIALOG: ADD EXPENSE -->
+    
     <Dialog
       v-model:visible="showDialog"
       :header="t('expenses.dialog.title')"
@@ -209,7 +209,7 @@ async function exportXLS() {
 
 function formatDateOnly(value) {
   const d = new Date(value)
-  d.setHours(d.getHours() + 1) // ⚠️ DST warning
+  d.setHours(d.getHours() + 1) 
   return d.toISOString().slice(0, 10)
 }
 

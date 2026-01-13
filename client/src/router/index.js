@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import RegisterView from '../views/RegisterView.vue'
-import MainLayout from '../layouts/MainLayout.vue' // ⬅️ to jest Twój layout z sidebar’em
+import MainLayout from '../layouts/MainLayout.vue' 
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -26,8 +26,7 @@ const routes = [
       ]
     }
 
-  // (opcjonalnie) 404
-  //{ path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFound.vue') }
+
 ]
 
 const router = createRouter({
@@ -35,12 +34,6 @@ const router = createRouter({
   routes
 })
 
-// (opcjonalnie) prosty guard – odkomentuj, jeśli chcesz pilnować logowania
-// router.beforeEach((to, from, next) => {
-//   const publicPages = ['/login', '/register', '/forgot-password', '/reset-password']
-//   const token = localStorage.getItem('token')
-//   if (!publicPages.includes(to.path) && !token) next('/login')
-//   else next()
-// })
+
 
 export default router

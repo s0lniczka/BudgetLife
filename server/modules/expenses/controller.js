@@ -9,7 +9,7 @@ const fs = require('fs');
 const toNum = (v) =>
   v === undefined || v === null || v === '' ? null : Number(v);
 
-/* ===================== LIST ===================== */
+
 exports.list = async (req, res, next) => {
   try {
     const { budget_id, from, to } = req.query;
@@ -47,7 +47,7 @@ exports.list = async (req, res, next) => {
   }
 };
 
-/* ===================== GET ONE ===================== */
+
 exports.getOne = async (req, res, next) => {
   try {
     const id = Number(req.params.id);
@@ -66,7 +66,7 @@ exports.getOne = async (req, res, next) => {
   }
 };
 
-/* ===================== CREATE ===================== */
+
 exports.create = async (req, res, next) => {
   try {
     const { budget_id, category, amount, description, date } = req.body;
@@ -86,9 +86,6 @@ exports.create = async (req, res, next) => {
       return res.status(404).json({ error: 'Budget not found' });
     }
 
-    // 🔥 NAJWAŻNIEJSZE:
-    // date = DATA MERYTORYCZNA (YYYY-MM-DD)
-    // created_at = NOW()
     const { rows } = await db.query(
       `INSERT INTO expenses
         (user_id, budget_id, category, amount, description, "date", created_at)
@@ -100,7 +97,7 @@ exports.create = async (req, res, next) => {
         category,
         toNum(amount),
         description ?? null,
-        date // ⬅️ STRING YYYY-MM-DD
+        date 
       ]
     );
 
@@ -125,7 +122,7 @@ exports.create = async (req, res, next) => {
 
 
 
-/* ===================== UPDATE ===================== */
+
 exports.update = async (req, res, next) => {
   try {
     const id = Number(req.params.id);
@@ -165,7 +162,7 @@ exports.update = async (req, res, next) => {
         category ?? null,
         amount !== undefined ? toNum(amount) : null,
         description ?? null,
-        date ?? null, // tu CELOWO zostawiamy możliwość edycji
+        date ?? null, 
         id,
         userId
       ]
@@ -177,7 +174,7 @@ exports.update = async (req, res, next) => {
   }
 };
 
-/* ===================== REMOVE ===================== */
+
 exports.remove = async (req, res, next) => {
   const client = await db.connect();
   const userId = req.user.id;
@@ -217,7 +214,6 @@ exports.remove = async (req, res, next) => {
   }
 };
 
-/* ===================== BY CATEGORY ===================== */
 exports.byCategory = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -246,7 +242,7 @@ exports.byCategory = async (req, res, next) => {
   }
 };
 
-/* ===================== RECENT ===================== */
+
 exports.recent = async (req, res) => {
   const { budget_id } = req.query;
 
@@ -274,7 +270,7 @@ function formatDatePL(date) {
 
 function excelSafeDate(d) {
   const date = new Date(d);
-  date.setHours(12); // 🔥 południe = zero problemów UTC
+  date.setHours(12); 
   return date;
 }
 
@@ -300,7 +296,7 @@ exports.exportXLS = async (req, res, next) => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Wydatki');
 
-    // ====== KOLUMNY ======
+  
     worksheet.columns = [
       { header: 'Data', key: 'date', width: 14 },
       { header: 'Budżet', key: 'budget', width: 22 },
@@ -309,19 +305,19 @@ exports.exportXLS = async (req, res, next) => {
       { header: 'Opis', key: 'description', width: 30 }
     ];
 
-    // ====== STYL NAGŁÓWKA ======
+
     worksheet.getRow(1).eachCell(cell => {
       cell.font = { bold: true };
       cell.alignment = { horizontal: 'center', vertical: 'middle' };
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FFE5E7EB' } // jasny szary
+        fgColor: { argb: 'FFE5E7EB' } 
       };
       cell.border = borderAll();
     });
 
-    // ====== DANE ======
+
     rows.forEach(r => {
       const row = worksheet.addRow({
         date: excelSafeDate(r.date),
@@ -338,10 +334,10 @@ exports.exportXLS = async (req, res, next) => {
       });
     });
 
-    // ====== PUSTY WIERSZ ======
+
     worksheet.addRow({});
 
-    // ====== SUMA ======
+
     const total = rows.reduce((sum, r) => sum + Number(r.amount), 0);
 
     const sumRow = worksheet.addRow({
@@ -361,13 +357,13 @@ exports.exportXLS = async (req, res, next) => {
       };
     });
 
-    // ====== AUTOFILTER ======
+
     worksheet.autoFilter = {
       from: 'A1',
       to: 'E1'
     };
 
-    // ====== RESPONSE ======
+
     res.setHeader(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -407,9 +403,7 @@ exports.exportPDF = async (req, res, next) => {
       [userId]
     );
 
-    // ======================
-    // 📊 agregacja miesięczna
-    // ======================
+
     const monthly = {};
     let total = 0;
 
@@ -419,9 +413,6 @@ exports.exportPDF = async (req, res, next) => {
       total += Number(r.amount);
     });
 
-    // ======================
-    // 📈 wykres
-    // ======================
     const chartCanvas = new ChartJSNodeCanvas({ width: 700, height: 350 });
     const chartImage = await chartCanvas.renderToBuffer({
       type: 'bar',
@@ -445,9 +436,6 @@ exports.exportPDF = async (req, res, next) => {
       }
     });
 
-    // ======================
-    // 📄 PDF
-    // ======================
     const doc = new PDFDocument({ margin: 40, size: 'A4' });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=wydatki.pdf');
@@ -456,15 +444,11 @@ exports.exportPDF = async (req, res, next) => {
     const fontPath = path.join(__dirname, '../../assets/fonts/DejaVuSans.ttf');
     doc.font(fontPath);
 
-    // ======================
-    // 🧾 tytuł
-    // ======================
+
     doc.fontSize(20).text('Raport wydatków', { align: 'center' });
     doc.moveDown(1);
 
-    // ======================
-    // 📊 wykres
-    // ======================
+
     doc.image(chartImage, {
       fit: [500, 260],
       align: 'center'
@@ -472,9 +456,7 @@ exports.exportPDF = async (req, res, next) => {
 
     doc.moveDown(1.5);
 
-    // ======================
-    // 📋 tabela
-    // ======================
+
     const rowH = 22;
     const col = {
       date: 80,
@@ -497,7 +479,6 @@ exports.exportPDF = async (req, res, next) => {
 
     doc.fontSize(10);
 
-    // nagłówek
     drawCell('Data', x, y, col.date, rowH);
     drawCell('Budżet', x + col.date, y, col.budget, rowH);
     drawCell('Kategoria', x + col.date + col.budget, y, col.category, rowH);
@@ -506,7 +487,7 @@ exports.exportPDF = async (req, res, next) => {
 
     y += rowH;
 
-    // dane
+
     rows.forEach(r => {
       if (y > doc.page.height - 80) {
         doc.addPage();
@@ -522,9 +503,7 @@ exports.exportPDF = async (req, res, next) => {
       y += rowH;
     });
 
-    // ======================
-    // ➕ suma
-    // ======================
+
     doc.moveDown(1);
     doc.fontSize(12).text(`SUMA: ${total.toFixed(2)} zł`, { align: 'right' });
 

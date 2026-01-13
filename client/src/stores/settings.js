@@ -24,7 +24,7 @@ export const useSettingsStore = defineStore('settings', {
     initTheme() {
         const saved = localStorage.getItem('theme')
 
-        // ⬇️ jawny default
+        
         this.theme = saved === 'dark' || saved === 'light'
             ? saved
             : 'light'

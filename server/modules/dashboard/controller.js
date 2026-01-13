@@ -4,7 +4,7 @@ exports.summary = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
-    // saldo i liczba budżetów
+    //saldo i ile budetow
     const { rows: budgets } = await db.query(
       `SELECT 
          COALESCE(SUM(actual_income - actual_expenses), 0) AS balance,
@@ -14,7 +14,7 @@ exports.summary = async (req, res, next) => {
       [userId]
     );
 
-    // liczba wydatków w bieżącym miesiącu
+    // ile w tym miechu
     const { rows: expenses } = await db.query(
       `SELECT COUNT(*) AS expenses_count
        FROM expenses

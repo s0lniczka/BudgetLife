@@ -35,6 +35,6 @@ app.directive('tooltip', Tooltip)
 app.use(router)
 
 const settings = useSettingsStore()
-settings.initTheme() // ⬅️ TU
+settings.initTheme() 
 
 app.mount('#app')

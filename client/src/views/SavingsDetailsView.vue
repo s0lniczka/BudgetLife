@@ -2,7 +2,7 @@
   <div class="view-wrapper flex justify-center p-6">
     <div class="w-full max-w-5xl app-card p-8 space-y-10">
 
-      <!-- HEADER -->
+      
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3">
           <button
@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <!-- CEL -->
+      
       <div class="border rounded-xl p-6 bg-black/5 dark:bg-white/5">
         <h2 class="text-2xl font-semibold mb-4">
           {{ goal.name }}
@@ -43,7 +43,7 @@
 
         <div class="grid grid-cols-12 gap-6 items-center md:divide-x">
 
-          <!-- LEWA -->
+          
           <div class="col-span-12 md:col-span-5 space-y-3">
             <p><strong>{{ t('savings.target') }}</strong> {{ money(goal.target_amount) }}</p>
             <p><strong>{{ t('savings.saved') }}</strong> {{ money(goal.saved_amount) }}</p>
@@ -58,7 +58,7 @@
               </span>
             </div>
 
-            <!-- PROGRESS -->
+            
             <div class="mt-4 max-w-sm">
               <div class="h-3 rounded-full overflow-hidden bg-black/10 dark:bg-white/10 border border-black/20 dark:border-white/20 shadow-inner">
                 <div
@@ -83,7 +83,7 @@
             </div>
           </div>
 
-          <!-- PRAWA / WYKRES -->
+          
           <div class="col-span-12 md:col-span-7 h-56">
             <div class="flex gap-2 mb-2 justify-end">
               <Button
@@ -113,7 +113,7 @@
         </div>
       </div>
 
-      <!-- DODAJ WPŁATĘ -->
+      
       <div class="space-y-4 border-b pb-8">
         <h3 class="text-xl font-semibold">{{ t('savings.addPayment') }}</h3>
 
@@ -140,7 +140,7 @@
         </div>
       </div>
 
-      <!-- HISTORIA WPŁAT -->
+      
       <div>
         <h3 class="text-xl font-semibold mb-4">{{ t('savings.history') }}</h3>
 
@@ -153,7 +153,7 @@
           class="relative space-y-6"
           :class="goal.status === 'completed' ? 'opacity-70 grayscale' : ''"
         >
-          <!-- linia -->
+          
           <div class="absolute left-4 top-0 bottom-0 w-px bg-black/20 dark:bg-white/20"></div>
 
           <div
@@ -161,7 +161,7 @@
             :key="p.id"
             class="relative flex items-center gap-4 group"
           >
-            <!-- kropka -->
+           
             <div
               class="relative z-10 flex items-center justify-center
                      w-6 h-6 rounded-full bg-emerald-500
@@ -170,7 +170,7 @@
               +
             </div>
 
-            <!-- karta wpłaty -->
+            
             <div
               class="flex items-center justify-between
                      w-full rounded-lg px-5 py-3
@@ -186,7 +186,7 @@
                 </strong>
               </div>
 
-              <!-- IKONY NA HOVER -->
+              
               <div
                 class="flex gap-3 opacity-0 group-hover:opacity-100 transition"
               >
@@ -211,7 +211,7 @@
         </div>
       </div>
 
-      <!-- EDIT GOAL -->
+      
       <Dialog
         v-model:visible="editDialog"
         :header="t('savings.dialog.editGoal')"
@@ -236,7 +236,7 @@
         </div>
       </Dialog>
 
-      <!-- EDIT PAYMENT -->
+      
       <Dialog
         v-model:visible="editPaymentDialog"
         header="Edytuj wpłatę"
@@ -375,7 +375,7 @@ const chartOptions = {
 
   layout: {
     padding: {
-      bottom: 24, // 🔥 ODSUWA OŚ X OD BORDA
+      bottom: 24, 
       top: 8,
       left: 8,
       right: 8

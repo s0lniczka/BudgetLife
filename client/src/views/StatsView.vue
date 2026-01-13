@@ -1,7 +1,7 @@
 <template>
   <div class="view-wrapper space-y-8">
 
-    <!-- HEADER -->
+    
     <div class="app-card p-6">
       <h1 class="text-3xl font-extrabold">
         📊 {{ t('stats.title') }}
@@ -11,7 +11,7 @@
       </p>
     </div>
 
-    <!-- SUMMARY -->
+    
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="app-card p-5 space-y-2">
         <div class="font-semibold">💰 {{ t('stats.totalIncome') }}</div>
@@ -42,7 +42,7 @@
       </div>
     </div>
 
-    <!-- FILTER -->
+    
     <div class="app-card p-4 flex gap-4">
       <Dropdown
         v-model="filters.type"
@@ -55,7 +55,7 @@
       />
     </div>
 
-    <!-- HISTORY -->
+    
     <div class="app-card p-6">
       <h2 class="text-xl font-semibold mb-6">
         🕒 {{ t('stats.history') }}
@@ -74,7 +74,7 @@
           :key="e.id"
           class="relative"
         >
-          <!-- DOT -->
+          
           <div
             class="absolute -left-[11px] top-1.5 w-5 h-5 rounded-full flex items-center justify-center text-xs text-white"
             :class="eventColor(e.type)"
@@ -82,7 +82,7 @@
             {{ eventIcon(e.type) }}
           </div>
 
-          <!-- CARD -->
+          
           <div class="app-card p-4">
             <div class="flex justify-between items-start gap-4">
               <div>
@@ -94,7 +94,7 @@
                 </div>
               </div>
 
-              <!-- KWOTA TYLKO DLA TRANSAKCJI -->
+              
               <div
                 v-if="e.amount !== null"
                 class="font-bold"
@@ -121,7 +121,7 @@ const { t } = useI18n()
 const API = 'http://localhost:5000/api'
 const settings = useSettingsStore()
 
-/* ===================== STATE ===================== */
+
 const summary = ref({
   income: 0,
   expenses: 0,
@@ -144,7 +144,7 @@ const typeOptions = [
 ]
 
 
-/* ===================== HELPERS ===================== */
+
 function authHeader() {
   return { Authorization: `Bearer ${localStorage.getItem('token')}` }
 }
@@ -189,7 +189,7 @@ function eventColor(type) {
   }[type]
 }
 
-/* ===================== DATA ===================== */
+
 const filteredEvents = computed(() => {
   if (!filters.value.type) return events.value
   return events.value.filter(e => e.type === filters.value.type)

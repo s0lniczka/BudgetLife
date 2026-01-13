@@ -1,7 +1,7 @@
 <template>
   <div class="view-wrapper space-y-6">
 
-    <!-- HEADER -->
+    
     <div class="app-card p-6 flex justify-between items-center">
       <h1 class="text-3xl font-bold">
         💰 {{ t('budgets.title') }}
@@ -14,7 +14,7 @@
       />
     </div>
 
-    <!-- TABLE -->
+    
     <div class="app-card p-6">
       <DataTable
         :value="budgets"
@@ -65,7 +65,7 @@
       </DataTable>
     </div>
 
-    <!-- DIALOG: NOWY BUDŻET -->
+    
     <Dialog
       v-model:visible="showDialog"
       :header="t('budgets.dialogs.new')"
@@ -137,7 +137,7 @@
       </div>
     </Dialog>
 
-    <!-- DIALOG: DODANIE PRZYCHODU -->
+    
     <Dialog
       v-model:visible="showIncomeDialog"
       :header="t('budgets.dialogs.addIncome')"

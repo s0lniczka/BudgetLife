@@ -25,7 +25,6 @@ r.post('/forgot-password', c.forgotPassword);
 r.post('/reset-password', c.resetPassword);
 
 
-// poprawna trasa zabezpieczona tokenem
 r.get('/me', auth, (req, res) => res.json({ id: req.user.id }));
 
 module.exports = r;

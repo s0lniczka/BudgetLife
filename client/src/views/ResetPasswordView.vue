@@ -9,12 +9,12 @@
              backdrop-blur-lg
              shadow-xl rounded-2xl p-8"
     >
-      <!-- THEME TOGGLE -->
+      
       <div class="absolute top-3 right-3">
         <ThemeToggle />
       </div>
 
-      <!-- Header -->
+      
       <div class="text-center mb-6">
         <h1 class="text-3xl font-bold">
           {{ t('reset.title') }}
@@ -24,9 +24,9 @@
         </p>
       </div>
 
-      <!-- Form -->
+      
       <div class="space-y-4">
-        <!-- New password -->
+        
         <div class="space-y-2">
           <label class="text-sm font-medium">
             {{ t('reset.password') }}
@@ -43,7 +43,7 @@
           </span>
         </div>
 
-        <!-- Repeat password -->
+        
         <div class="space-y-2">
           <label class="text-sm font-medium">
             {{ t('reset.password2') }}
@@ -60,7 +60,7 @@
           </span>
         </div>
 
-        <!-- Messages -->
+        
         <InlineMessage v-if="error" severity="error" class="w-full">
           {{ error }}
         </InlineMessage>
@@ -69,7 +69,7 @@
           {{ ok }}
         </InlineMessage>
 
-        <!-- Button -->
+        
         <Button
           :label="t('reset.submit')"
           :loading="loading"

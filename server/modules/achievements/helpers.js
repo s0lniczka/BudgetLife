@@ -1,4 +1,4 @@
-// modules/achievements/helpers.js
+
 const db = require('../../config/db');
 
 /**
