@@ -7,35 +7,60 @@ function getUserId(req) {
 exports.getStats = async (req, res) => {
   try {
     const userId = getUserId(req);
-    //zwaraca dane razem
+    const { budget_id } = req.query;
+
+    /* =========================
+       SUMMARY (kafelki)
+    ========================= */
+
+    const incomeQuery = budget_id
+      ? `
+        SELECT COALESCE(SUM(amount),0)::numeric AS total
+        FROM income_transactions
+        WHERE user_id = $1 AND budget_id = $2
+      `
+      : `
+        SELECT COALESCE(SUM(amount),0)::numeric AS total
+        FROM income_transactions
+        WHERE user_id = $1
+      `;
+
+    const expenseQuery = budget_id
+      ? `
+        SELECT COALESCE(SUM(amount),0)::numeric AS total
+        FROM expenses
+        WHERE user_id = $1 AND budget_id = $2
+      `
+      : `
+        SELECT COALESCE(SUM(amount),0)::numeric AS total
+        FROM expenses
+        WHERE user_id = $1
+      `;
+
+    const params = budget_id ? [userId, budget_id] : [userId];
+
     const [
       incomeSum,
       expenseSum,
       savedSum,
       achievementsCount
     ] = await Promise.all([
+      db.query(incomeQuery, params),
+      db.query(expenseQuery, params),
       db.query(
-        `SELECT COALESCE(SUM(amount),0)::numeric AS total
-         FROM income_transactions
-         WHERE user_id = $1`,
+        `
+        SELECT COALESCE(SUM(saved_amount),0)::numeric AS total
+        FROM savings_goals
+        WHERE user_id = $1
+        `,
         [userId]
       ),
       db.query(
-        `SELECT COALESCE(SUM(amount),0)::numeric AS total
-         FROM expenses
-         WHERE user_id = $1`,
-        [userId]
-      ),
-      db.query(
-        `SELECT COALESCE(SUM(saved_amount),0)::numeric AS total
-         FROM savings_goals
-         WHERE user_id = $1`,
-        [userId]
-      ),
-      db.query(
-        `SELECT COUNT(*)::int AS total
-         FROM user_achievements
-         WHERE user_id = $1`,
+        `
+        SELECT COUNT(*)::int AS total
+        FROM user_achievements
+        WHERE user_id = $1
+        `,
         [userId]
       )
     ]);
@@ -47,6 +72,10 @@ exports.getStats = async (req, res) => {
       achievements: Number(achievementsCount.rows[0].total)
     };
 
+    /* =========================
+       EVENTS (historia)
+    ========================= */
+
     const { rows: events } = await db.query(
       `
       (
@@ -56,15 +85,16 @@ exports.getStats = async (req, res) => {
           'expense'::text AS type,
           e.category::text AS title,
           (-e.amount)::numeric AS amount,
-          created_at AS date
+          e.created_at AS date
         FROM expenses e
         WHERE e.user_id = $1
+          AND ($2::int IS NULL OR e.budget_id = $2)
       )
 
       UNION ALL
 
       (
-        -- 2) PRZYCHODY (z income_transactions, NIE z history)
+        -- 2) PRZYCHODY
         SELECT
           'income-' || it.id AS id,
           'income'::text AS type,
@@ -74,12 +104,13 @@ exports.getStats = async (req, res) => {
         FROM income_transactions it
         JOIN budgets b ON b.id = it.budget_id
         WHERE it.user_id = $1
+          AND ($2::int IS NULL OR it.budget_id = $2)
       )
 
       UNION ALL
 
       (
-        -- 3) UTWORZENIE BUDŻETU (z history, bo budgets nie ma created_at)
+        -- 3) UTWORZENIE BUDŻETU
         SELECT
           'budget-' || h.id AS id,
           'budget'::text AS type,
@@ -94,7 +125,7 @@ exports.getStats = async (req, res) => {
       UNION ALL
 
       (
-        -- 4) UTWORZENIE CELU OSZCZĘDNOŚCIOWEGO (created_at, kwoty brak)
+        -- 4) UTWORZENIE CELU OSZCZĘDNOŚCIOWEGO
         SELECT
           'saving-goal-' || sg.id AS id,
           'saving'::text AS type,
@@ -108,7 +139,7 @@ exports.getStats = async (req, res) => {
       UNION ALL
 
       (
-        -- 5) WPŁATY DO CELI (savings_transactions)
+        -- 5) WPŁATY DO CELI
         SELECT
           'saving-pay-' || st.id AS id,
           'saving'::text AS type,
@@ -137,11 +168,12 @@ exports.getStats = async (req, res) => {
 
       ORDER BY date DESC NULLS LAST
       `,
-      [userId]
+      [userId, budget_id || null]
     );
 
     res.json({ summary, events });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };

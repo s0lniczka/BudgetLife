@@ -43,16 +43,36 @@
     </div>
 
     
-    <div class="app-card p-4 flex gap-4">
-      <Dropdown
-        v-model="filters.type"
-        :options="typeOptions"
-        optionLabel="label"
-        optionValue="value"
-        :placeholder="t('stats.filters.type')"
-        class="w-56"
-        showClear
-      />
+    <div class="app-card p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="flex flex-col sm:flex-row gap-4 items-start">
+        <Dropdown
+          v-model="selectedBudget"
+          :options="budgets"
+          optionLabel="name"
+          optionValue="id"
+          :placeholder="t('stats.selectBudget')"
+          showClear
+          class="w-full sm:w-64"
+        />
+
+        <Dropdown
+          v-model="filters.type"
+          :options="typeOptions"
+          optionLabel="label"
+          optionValue="value"
+          :placeholder="t('stats.filters.type')"
+          class="w-56"
+          showClear
+        />
+      </div>
+      <div class="lg:col-span-2 h-36">
+        <Chart
+          type="line"
+          :data="chartData"
+          :options="chartOptions"
+        />
+      </div>
+  
     </div>
 
     
@@ -112,14 +132,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed,watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Dropdown from 'primevue/dropdown'
 import {useSettingsStore} from '@/stores/settings'
+import Chart from 'primevue/chart'
 
 const { t } = useI18n()
 const API = 'http://localhost:5000/api'
 const settings = useSettingsStore()
+const selectedBudget = ref(null)
+const budgets = ref([])
 
 
 const summary = ref({
@@ -148,6 +171,87 @@ const typeOptions = [
 function authHeader() {
   return { Authorization: `Bearer ${localStorage.getItem('token')}` }
 }
+
+async function loadBudgets() {
+  const res = await fetch(`${API}/budgets`, {
+    headers: authHeader()
+  })
+  budgets.value = await res.json()
+}
+
+async function loadStats() {
+  const query = selectedBudget.value
+    ? `?budget_id=${selectedBudget.value}`
+    : ''
+
+  const res = await fetch(`${API}/stats${query}`, {
+    headers: authHeader()
+  })
+
+  const data = await res.json()
+  summary.value = data.summary
+  events.value = data.events
+}
+
+
+watch(selectedBudget, async () => {
+  await loadStats()
+})
+
+const chartData = computed(() => {
+  const income = {}
+  const expenses = {}
+
+  events.value.forEach(e => {
+    if (!e.date || e.amount == null) return
+
+    const day = e.date.slice(0, 10)
+
+    if (e.type === 'income') {
+      income[day] = (income[day] || 0) + Number(e.amount)
+    }
+
+    if (e.type === 'expense') {
+      expenses[day] = (expenses[day] || 0) + Math.abs(Number(e.amount))
+    }
+  })
+
+  const labels = Array.from(
+    new Set([...Object.keys(income), ...Object.keys(expenses)])
+  ).sort()
+
+  return {
+    labels,
+    datasets: [
+      {
+        label: t('stats.chart.income'),
+        data: labels.map(d => income[d] || 0),
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.15)',
+        tension: 0.4
+      },
+      {
+        label: t('stats.chart.expenses'),
+        data: labels.map(d => expenses[d] || 0),
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239,68,68,0.15)',
+        tension: 0.4
+      }
+    ]
+  }
+})
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom'
+    }
+  }
+}
+
+
 
 function formatCurrency(value) {
   if (value == null) return '—'
@@ -196,13 +300,8 @@ const filteredEvents = computed(() => {
 })
 
 onMounted(async () => {
-  const res = await fetch(`${API}/stats`, {
-    headers: authHeader()
-  })
-
-  const data = await res.json()
-
-  summary.value = data.summary
-  events.value = data.events
+  await loadBudgets()
+  await loadStats()
 })
+
 </script>

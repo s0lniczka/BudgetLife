@@ -274,6 +274,11 @@
   "stats": {
     "title": "Statistics",
     "subtitle": "Overview of your financial activity",
+    "selectBudget":"All budgets",
+    "chart": {
+      "income": "Income",
+      "expenses": "Expenses"
+    },
 
     "totalIncome": "Total income",
     "totalExpenses": "Total expenses",

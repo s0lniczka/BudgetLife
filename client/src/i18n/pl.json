@@ -275,6 +275,7 @@
   "stats": {
     "title": "Statystyki",
     "subtitle": "Podsumowanie Twojej aktywności finansowej",
+    "selectBudget":"Wszystkie budżety",
 
     "totalIncome": "Łączne przychody",
     "totalExpenses": "Łączne wydatki",

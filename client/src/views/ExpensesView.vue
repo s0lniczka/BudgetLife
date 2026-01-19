@@ -6,8 +6,25 @@
       <h1 class="text-3xl font-bold">
         🧾 {{ t('expenses.title') }}
       </h1>
+      <div class="app-card p-4 flex flex-col sm:flex-row gap-4">
+        <Dropdown
+          v-model="selectedBudget"
+          :options="budgets"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Budżet"
+          showClear
+          class="w-full sm:w-56"
+        />
 
-      <div class="flex gap-3">
+        <!-- MIESIĄC -->
+        <input
+          type="month"
+          v-model="selectedMonth"
+          class="input w-full sm:w-48"
+        />
+      </div>
+      <div class="hidden sm:flex gap-3">
         <Button
           :label="'➕ ' + t('expenses.add')"
           class="p-button-success"
@@ -24,6 +41,27 @@
           @click="exportPDF"
         />
       </div>
+      <div class="flex sm:hidden gap-2">
+        <Button
+          icon="pi pi-plus"
+          class="p-button-success p-button-rounded"
+          aria-label="Add expense"
+          @click="showDialog = true"
+        />
+        <Button
+          icon="pi pi-file-excel"
+          class="p-button-outlined p-button-rounded"
+          aria-label="Export Excel"
+          @click="exportXLS"
+        />
+        <Button
+          icon="pi pi-file-pdf"
+          class="p-button-outlined p-button-rounded"
+          aria-label="Export PDF"
+          @click="exportPDF"
+        />
+      </div>
+
     </div>
 
     
@@ -150,7 +188,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
@@ -172,7 +210,8 @@ const showDialog = ref(false)
 const toast = useToast()
 const { t } = useI18n()
 const settings = useSettingsStore()
-
+const selectedBudget = ref(null)
+const selectedMonth = ref(null)
 
 const form = ref({
   budget_id: null,
@@ -186,13 +225,20 @@ function authHeader() {
   const token = localStorage.getItem('token')
   return { Authorization: `Bearer ${token}` }
 }
+function buildQuery() {
+  const params = new URLSearchParams()
+  if (selectedBudget.value) params.append('budget_id', selectedBudget.value)
+  if (selectedMonth.value) params.append('month', selectedMonth.value) // "YYYY-MM"
+  return params.toString()
+}
 
 async function exportXLS() {
   try {
-    const res = await fetch(`${API}/expenses/export/xls`, {
+    const query = buildQuery()
+    const res = await fetch(`${API}/expenses/export/xls${query ? '?' + query : ''}`, {
       headers: authHeader()
     })
-    if (!res.ok) throw new Error('Export error')
+    if (!res.ok) throw new Error('Export XLS error')
 
     const blob = await res.blob()
     const url = URL.createObjectURL(blob)
@@ -207,16 +253,10 @@ async function exportXLS() {
   }
 }
 
-function formatDateOnly(value) {
-  const d = new Date(value)
-  d.setHours(d.getHours() + 1) 
-  return d.toISOString().slice(0, 10)
-}
-
-
 async function exportPDF() {
   try {
-    const res = await fetch(`${API}/expenses/export/pdf`, {
+    const query = buildQuery()
+    const res = await fetch(`${API}/expenses/export/pdf${query ? '?' + query : ''}`, {
       headers: authHeader()
     })
     if (!res.ok) throw new Error('Export PDF error')
@@ -235,9 +275,32 @@ async function exportPDF() {
 }
 
 async function loadExpenses() {
-  const res = await fetch(`${API}/expenses`, { headers: authHeader() })
+  const query = buildQuery()
+
+  const res = await fetch(
+    `${API}/expenses${query ? '?' + query : ''}`,
+    { headers: authHeader() }
+  )
+
   expenses.value = await res.json()
 }
+
+
+
+
+
+
+function formatDateOnly(value) {
+  const d = new Date(value)
+  d.setHours(d.getHours() + 1) 
+  return d.toISOString().slice(0, 10)
+}
+
+
+
+
+
+
 
 async function loadBudgets() {
   const res = await fetch(`${API}/budgets`, { headers: authHeader() })
@@ -305,6 +368,10 @@ function formatCurrency(value) {
     }
   ).format(converted)
 }
+watch([selectedBudget, selectedMonth], async () => {
+  await loadExpenses()
+})
+
 
 
 

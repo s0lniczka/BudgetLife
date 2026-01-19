@@ -1,6 +1,6 @@
 <template>
-  <div class="view-wrapper flex justify-center p-6">
-    <div class="w-full max-w-5xl app-card p-8 space-y-10">
+  <div class="view-wrapper flex justify-center p-2 lg:p-5 xl:p-6">
+    <div class="w-full max-w-5xl app-card p-4 lg:p-6 xl:p-8 space-y-10">
 
       
       <div class="flex items-center justify-between mb-6">
@@ -13,7 +13,7 @@
             ←
           </button>
 
-          <h1 class="text-3xl font-bold flex items-center gap-2">
+          <h1 class="hidden sm:text-3xl font-bold flex items-center gap-2">
             🏆 {{ t('savings.detail.title') }}
           </h1>
         </div>
